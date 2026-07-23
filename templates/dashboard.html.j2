@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAD Monitor Dashboard</title>
+<style>
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; background: #f4f4f5; color: #1a1a2e; }
+  header { background: #1a1a2e; color: #fff; padding: 16px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #c0c0d0; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e0e0e0; }
+  .controls input, .controls select { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; }
+  th, td { text-align: left; padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #eee; vertical-align: top; }
+  th { background: #f9f9fb; position: sticky; top: 0; cursor: pointer; }
+  tr.expired { opacity: 0.45; }
+  .cat-tender { border-left: 4px solid #e63946; }
+  .cat-company { border-left: 4px solid #f4a300; }
+  .cat-news { border-left: 4px solid #999; }
+  a { color: #1a1a2e; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding-bottom: 40px; }
+  .days { font-variant-numeric: tabular-nums; color: #666; }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>VAD Monitor — GIS/MV-HV części zamienne (DACH/CEE)</h1>
+<p>Ostatnia aktualizacja: {{ run_date }} · {{ records|length }} pozycji w archiwum</p>
+</div></header>
+
+<div class="wrap">
+<div class="controls">
+  <input id="q" type="text" placeholder="Szukaj słowa kluczowego...">
+  <select id="country"><option value="">Wszystkie kraje</option><option value="DE">🇩🇪 DE</option><option value="CH">🇨🇭 CH</option><option value="PL">🇵🇱 PL</option></select>
+  <select id="category"><option value="">Wszystkie kategorie</option><option value="tender">🔴 Przetargi</option><option value="company">🟡 Firmy</option><option value="news">⚪ Newsy</option></select>
+  <select id="source"><option value="">Wszystkie źródła</option>{% for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
+  <label style="font-size:13px;"><input type="checkbox" id="hideExpired"> ukryj przeterminowane</label>
+</div>
+
+<table id="tbl">
+<thead><tr>
+<th data-k="category">Kat.</th>
+<th data-k="country">Kraj</th>
+<th data-k="title">Tytuł</th>
+<th data-k="buyer">Zamawiający</th>
+<th data-k="source">Źródło</th>
+<th data-k="date_first_seen">Wykryto</th>
+<th data-k="days_since">Dni od wykrycia</th>
+<th data-k="deadline">Termin</th>
+<th>Uzasadnienie</th>
+</tr></thead>
+<tbody>
+{% for r in records %}
+<tr class="cat-{{ r.category }}{% if r.expired %} expired{% endif %}"
+    data-country="{{ r.country }}" data-category="{{ r.category }}" data-source="{{ r.source }}"
+    data-expired="{{ r.expired }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
+  <td>{{ {"tender": "🔴", "company": "🟡", "news": "⚪"}.get(r.category, "") }}</td>
+  <td>{{ {"DE": "🇩🇪", "CH": "🇨🇭", "PL": "🇵🇱"}.get(r.country, r.country) }}</td>
+  <td><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></td>
+  <td>{{ r.buyer or "" }}</td>
+  <td>{{ r.source }}</td>
+  <td>{{ r.date_first_seen }}</td>
+  <td class="days">{{ r.days_since }}</td>
+  <td>{{ r.deadline or "" }}</td>
+  <td>{{ r.reason }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<script>
+const q = document.getElementById('q'), country = document.getElementById('country'),
+      category = document.getElementById('category'), source = document.getElementById('source'),
+      hideExpired = document.getElementById('hideExpired');
+function applyFilters() {
+  const term = q.value.toLowerCase();
+  document.querySelectorAll('#tbl tbody tr').forEach(row => {
+    const okText = !term || row.dataset.text.includes(term);
+    const okCountry = !country.value || row.dataset.country === country.value;
+    const okCategory = !category.value || row.dataset.category === category.value;
+    const okSource = !source.value || row.dataset.source === source.value;
+    const okExpired = !hideExpired.checked || row.dataset.expired !== "True";
+    row.style.display = (okText && okCountry && okCategory && okSource && okExpired) ? "" : "none";
+  });
+}
+[q, country, category, source, hideExpired].forEach(el => el.addEventListener('input', applyFilters));
+document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
+  const key = th.dataset.k;
+  const tbody = document.querySelector('#tbl tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const idx = Array.from(th.parentNode.children).indexOf(th);
+  const asc = th.dataset.asc !== "true";
+  rows.sort((a, b) => a.children[idx].innerText.localeCompare(b.children[idx].innerText) * (asc ? 1 : -1));
+  th.dataset.asc = asc;
+  rows.forEach(r => tbody.appendChild(r));
+}));
+</script>
+</body>
+</html>
