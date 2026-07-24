@@ -22,8 +22,6 @@ jobs:
 
       - name: Run pipeline (fetch, filter, store, generate, email)
         env:
-          ZEFIX_USER: ${{ secrets.ZEFIX_USER }}
-          ZEFIX_PASS: ${{ secrets.ZEFIX_PASS }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}

@@ -52,6 +52,23 @@ BRANCH_HINTS = [
     "electrical engineering", "power distribution", "switchgear manufactur",
 ]
 
+# Stricter term set for matching free-text *company purpose* descriptions (used by sources/zefix.py).
+# Swiss commercial-register purpose statements routinely include generic boilerplate like "Handel
+# mit Waren und Ersatzteilen aller Art" (trade in goods and spare parts of all kinds) or reference
+# "Casting" (film/talent casting agencies) — so the generic KEYWORDS_*/BRANCH_HINTS above are too
+# noisy for this specific use case (confirmed by testing: "ersatzteil" and "casting" pulled in
+# travel agencies, film production companies, generic trading firms). This list sticks to terms
+# specific enough to the GIS/MV-HV switchgear domain that they're unlikely to be generic boilerplate.
+COMPANY_MATCH_TERMS = [
+    "mittelspannung", "hochspannung", "schaltanlage", "umspannwerk", "trafostation",
+    "schaltschrank", "leistungsschalter", "trennschalter", "schaltfeld", "gussteil",
+    "sf6", "transformator", "switchgear", "disconnector", "circuit breaker",
+    "medium voltage", "high voltage", "substation",
+    "elektrotechnik", "energieversorgung", "schaltanlagenbau",
+    ("dystrybucj", "energi"), "energetyk", "electrical engineering",
+    "power distribution", "switchgear manufactur",
+]
+
 # Countries in scope
 COUNTRIES = ["DE", "CH", "PL"]
 
