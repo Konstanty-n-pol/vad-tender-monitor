@@ -23,13 +23,28 @@ Dataset notes (also verified live):
   Swiss boilerplate purpose statements ("Handel mit Waren und Ersatzteilen aller Art") and in
   unrelated industries (film/talent casting agencies) — confirmed by testing, where those terms
   pulled in travel agencies and production companies. See COMPANY_MATCH_TERMS in config.py.
+- A company is included if its purpose text (schema:description) mentions ANY COMPANY_MATCH_TERMS
+  hit — this covers both manufacturers/operators and distributors, since a reseller's purpose
+  text ("Handel mit Mittelspannungsschaltanlagen") still names the technical domain term. On top
+  of that, DISTRIBUTOR_ROLE_TERMS (config.py) is checked separately to *classify* the match in the
+  digest reason as "dystrybucja/handel" vs a plain domain match — it never gates inclusion on its
+  own, since role terms alone (Handel, distribution, ...) are far too generic.
+- Company names are matched in German, French or Italian (lang(?name) IN de/fr/it) — Suisse
+  Romande and Ticino companies were previously excluded entirely by a German-only name filter.
+- Companies commonly have multiple schema:name literals (per-language trade names) and multiple
+  schema:additionalType labels (per-language legal form) — the un-aggregated SELECT below returns
+  the full cross product of all of those per company (confirmed live: one company showed up 8x).
+  Tried fixing this server-side with GROUP BY + SAMPLE(...), but that made the query time out
+  (aggregation forces the server to compute the whole grouped result before it can stream
+  anything back, unlike a plain SELECT+LIMIT which streams incrementally) — reverted. Instead we
+  dedup client-side in fetch() by company_uri, merging keywords across the duplicate rows.
 """
 import re
 import requests
 from datetime import date
 from sources import Record
 from config import COMPANY_MATCH_TERMS
-from filters import match_company_purpose
+from filters import match_company_purpose, match_distributor_role
 
 ENDPOINT = "https://lindas.admin.ch/query"
 TIMEOUT = 150  # the full-register regex scan is genuinely slow, see module docstring
@@ -41,20 +56,20 @@ SELECT ?company_uri ?name ?description ?company_type ?municipality ?street ?loca
   ?company_uri a admin:ZefixOrganisation ;
        schema:name ?name ;
        schema:description ?description .
-  FILTER(lang(?name) = "de")
+  FILTER(lang(?name) = "de" || lang(?name) = "fr" || lang(?name) = "it")
   FILTER regex(str(?description), "{pattern}", "i")
   OPTIONAL {{ ?company_uri admin:municipality ?muni_id . ?muni_id schema:name ?municipality . }}
   OPTIONAL {{
     ?company_uri schema:additionalType ?type_id .
     ?type_id schema:name ?company_type .
-    FILTER(lang(?company_type) = "de")
+    FILTER(lang(?company_type) = "de" || lang(?company_type) = "fr" || lang(?company_type) = "it")
   }}
   OPTIONAL {{
     ?company_uri schema:address ?adr .
     ?adr schema:streetAddress ?street ; schema:addressLocality ?locality .
   }}
 }}
-LIMIT 200
+LIMIT 400
 """
 
 
@@ -90,32 +105,58 @@ def fetch() -> list:
         print(f"[zefix] SPARQL query failed: {e}")
         return records
 
-    today = date.today().isoformat()
+    # Dedup by company_uri first: the query returns one row per (name-language x legal-form-
+    # language) combination for the same company, see module docstring. Merge all variants'
+    # name/description text before matching so we don't lose a keyword that only shows up in
+    # e.g. the French name/description while keeping the first non-empty context fields.
+    by_company = {}
     for b in data.get("results", {}).get("bindings", []):
+        uri = b.get("company_uri", {}).get("value", "")
         name = b.get("name", {}).get("value", "")
-        description = b.get("description", {}).get("value", "")
-        if not name:
+        if not uri or not name:
             continue
-        matched = match_company_purpose(name, description)
+        entry = by_company.setdefault(uri, {
+            "names": [], "descriptions": set(), "company_type": "", "place": "",
+        })
+        entry["names"].append(name)
+        desc = b.get("description", {}).get("value", "")
+        if desc:
+            entry["descriptions"].add(desc)
+        if not entry["company_type"]:
+            entry["company_type"] = b.get("company_type", {}).get("value", "")
+        if not entry["place"]:
+            entry["place"] = b.get("municipality", {}).get("value", "") or b.get("locality", {}).get("value", "")
+
+    today = date.today().isoformat()
+    for uri, entry in by_company.items():
+        name = entry["names"][0]
+        description = " ".join(entry["descriptions"])
+        matched = match_company_purpose(*entry["names"], description)
         if not matched:
             continue  # re-confirm in Python; the SPARQL side uses the same term list but re-checking is cheap and safe
+        role_matched = match_distributor_role(*entry["names"], description)
 
-        company_type = b.get("company_type", {}).get("value", "")
-        municipality = b.get("municipality", {}).get("value", "")
-        locality = b.get("locality", {}).get("value", "")
-        place = municipality or locality
+        company_type = entry["company_type"]
+        place = entry["place"]
         buyer_context = f"{company_type}, {place}".strip(", ") if (company_type or place) else None
+
+        if role_matched:
+            reason = f"dystrybucja/handel ({role_matched[0]}) + {matched[0]}"
+        else:
+            reason = f"cel działalności zawiera: {matched[0]}"
+        if place:
+            reason += f"; {place}"
 
         records.append(Record(
             title=name,
-            url=b.get("company_uri", {}).get("value", ""),
+            url=uri,
             source="zefix",
             country="CH",
             category="company",
             date_found=today,
             buyer=buyer_context,
-            keywords_matched=matched,
-            reason=f"cel działalności zawiera: {matched[0]}" + (f"; {place}" if place else ""),
+            keywords_matched=matched + role_matched,
+            reason=reason,
         ))
     return records
 

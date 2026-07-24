@@ -67,6 +67,25 @@ COMPANY_MATCH_TERMS = [
     "elektrotechnik", "energieversorgung", "schaltanlagenbau",
     ("dystrybucj", "energi"), "energetyk", "electrical engineering",
     "power distribution", "switchgear manufactur",
+    # French/Italian variants — Zefix purpose text isn't only German, and until now we only
+    # matched companies with a German-tagged name (excluding Suisse Romande/Ticino entirely).
+    "haute tension", "moyenne tension", "poste électrique", "sous-station",
+    "disjoncteur", "sectionneur",
+    "alta tensione", "media tensione", "sottostazione", "interruttore",
+]
+
+# Terms indicating a distribution / brokerage / reselling business model rather than
+# manufacturing. On their own these are far too generic to filter on (a large share of all
+# Swiss trading companies mention "Handel"/"distribution" in their purpose) — only meaningful
+# combined with a COMPANY_MATCH_TERMS hit in the same text. Used to *classify* company matches
+# (distributor/broker/reseller vs. manufacturer/operator) for the digest, not to decide inclusion.
+DISTRIBUTOR_ROLE_TERMS = [
+    "handel", "vertrieb", "grosshandel", "vermittlung", "handelsvertretung",
+    "wiederverkauf", "distribution", "import", "export",
+    "négoce", "commerce de gros", "courtage", "représentation", "revente",
+    "distribuzione", "commercio all'ingrosso", "intermediazione", "rappresentanza",
+    "wholesale", "brokerage", "broker", "reseller", "reselling", "trading", "agency",
+    "dystrybucj", "pośrednictw", "hurt", "odsprzedaż",
 ]
 
 # Countries in scope
