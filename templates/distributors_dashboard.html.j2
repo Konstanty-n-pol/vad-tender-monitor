@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAD Monitor — Dystrybutorzy/Broker/Reseller (CH)</title>
+<style>
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; background: #f4f4f5; color: #1a1a2e; }
+  header { background: #1a1a2e; color: #fff; padding: 16px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #c0c0d0; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e0e0e0; }
+  .controls input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; }
+  th, td { text-align: left; padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #eee; vertical-align: top; }
+  th { background: #f9f9fb; position: sticky; top: 0; cursor: pointer; }
+  a { color: #1a1a2e; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding-bottom: 40px; }
+  .back { font-size: 13px; }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Dystrybutorzy / Broker / Reseller — przemysł techniczny, maszyny, wyposażenie statków (CH)</h1>
+<p>Ostatnia aktualizacja: {{ run_date }} · {{ records|length }} firm w archiwum · <a class="back" href="index.html" style="color:#c0c0d0;">← główny dashboard</a></p>
+</div></header>
+
+<div class="wrap">
+<div class="controls">
+  <input id="q" type="text" placeholder="Szukaj słowa kluczowego...">
+</div>
+
+<table id="tbl">
+<thead><tr>
+<th data-k="title">Firma</th>
+<th data-k="buyer">Forma prawna / miejscowość</th>
+<th data-k="date_first_seen">Wykryto</th>
+<th>Uzasadnienie</th>
+</tr></thead>
+<tbody>
+{% for r in records %}
+<tr data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
+  <td><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></td>
+  <td>{{ r.buyer or "" }}</td>
+  <td>{{ r.date_first_seen }}</td>
+  <td>{{ r.reason }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<script>
+const q = document.getElementById('q');
+q.addEventListener('input', () => {
+  const term = q.value.toLowerCase();
+  document.querySelectorAll('#tbl tbody tr').forEach(row => {
+    row.style.display = (!term || row.dataset.text.includes(term)) ? "" : "none";
+  });
+});
+document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
+  const key = th.dataset.k;
+  const tbody = document.querySelector('#tbl tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const idx = Array.from(th.parentNode.children).indexOf(th);
+  const asc = th.dataset.asc !== "true";
+  rows.sort((a, b) => a.children[idx].innerText.localeCompare(b.children[idx].innerText) * (asc ? 1 : -1));
+  th.dataset.asc = asc;
+  rows.forEach(r => tbody.appendChild(r));
+}));
+</script>
+</body>
+</html>

@@ -4,8 +4,8 @@ Run: python main.py
 Env vars used: see mailer.py and sources/zefix.py docstrings.
 """
 import os
-from config import SOURCES_ENABLED
-from sources import zefix, simap, ted, ezamowienia
+from config import SOURCES_ENABLED, DISTRIBUTOR_REPORT_ENABLED
+from sources import zefix, simap, ted, ezamowienia, zefix_distributors
 import storage
 import generate
 import mailer
@@ -47,6 +47,28 @@ def dedup_across_sources(records: list) -> list:
     return deduped
 
 
+def run_distributor_report(dashboard_url: str):
+    """Separate weekly report: CH distribution/broker/reseller companies in industrial-machinery
+    or marine/ship-equipment branches. Independent of SOURCES_ENABLED/the main digest — see
+    sources/zefix_distributors.py docstring for why this is kept apart."""
+    print("[main] fetching zefix_distributors...")
+    try:
+        fetched = zefix_distributors.fetch()
+    except Exception as e:
+        print(f"[main] zefix_distributors failed: {e}")
+        return
+    print(f"[main] zefix_distributors: {len(fetched)} relevant record(s)")
+
+    new_records = storage.upsert_distributor_records(fetched)
+    print(f"[main] {len(new_records)} brand-new distributor record(s) this run")
+
+    generate.write_distributors_dashboard()
+
+    distributors_url = dashboard_url.rstrip("/") + "/distributors.html"
+    email_html = generate.render_distributors_email(new_records, distributors_url)
+    mailer.send_digest(email_html, has_content=bool(new_records), subject_prefix="VAD Monitor — Dystrybutorzy")
+
+
 def main():
     all_records = fetch_all()
     all_records = dedup_across_sources(all_records)
@@ -59,6 +81,9 @@ def main():
     dashboard_url = os.environ.get("DASHBOARD_URL", "https://<your-username>.github.io/vad-tender-monitor/")
     email_html = generate.render_email(new_records, dashboard_url)
     mailer.send_digest(email_html, has_content=bool(new_records))
+
+    if DISTRIBUTOR_REPORT_ENABLED:
+        run_distributor_report(dashboard_url)
 
 
 if __name__ == "__main__":

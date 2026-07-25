@@ -25,12 +25,30 @@ CREATE TABLE IF NOT EXISTS records (
 );
 """
 
+# Separate table for the distributor/broker/reseller report (sources/zefix_distributors.py) —
+# kept apart from `records` so it never mixes into the curated GIS/MV-HV digest's dashboard/email.
+DISTRIBUTOR_SCHEMA = """
+CREATE TABLE IF NOT EXISTS distributor_records (
+    dedup_key TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    url TEXT,
+    source TEXT NOT NULL,
+    country TEXT NOT NULL,
+    buyer TEXT,
+    keywords_matched TEXT,
+    reason TEXT,
+    date_first_seen TEXT NOT NULL,
+    date_last_seen TEXT NOT NULL
+);
+"""
+
 
 @contextmanager
 def connect():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.execute(SCHEMA)
+    conn.execute(DISTRIBUTOR_SCHEMA)
     try:
         yield conn
         conn.commit()
@@ -75,4 +93,42 @@ def all_records():
     with connect() as conn:
         conn.row_factory = sqlite3.Row
         rows = conn.execute("SELECT * FROM records ORDER BY date_first_seen DESC").fetchall()
+        return [dict(r) for r in rows]
+
+
+def upsert_distributor_records(records) -> list:
+    """Same insert/refresh/return-new-only logic as upsert_records(), targeting the separate
+    distributor_records table."""
+    today = date.today().isoformat()
+    new_records = []
+    with connect() as conn:
+        for r in records:
+            key = r.dedup_key()
+            existing = conn.execute(
+                "SELECT dedup_key FROM distributor_records WHERE dedup_key = ?", (key,)
+            ).fetchone()
+            if existing:
+                conn.execute(
+                    "UPDATE distributor_records SET date_last_seen = ? WHERE dedup_key = ?",
+                    (today, key),
+                )
+            else:
+                conn.execute(
+                    """INSERT INTO distributor_records
+                    (dedup_key, title, url, source, country, buyer, keywords_matched, reason,
+                     date_first_seen, date_last_seen)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (key, r.title, r.url, r.source, r.country, r.buyer,
+                     ",".join(r.keywords_matched), r.reason, today, today),
+                )
+                new_records.append(r)
+    return new_records
+
+
+def all_distributor_records():
+    with connect() as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT * FROM distributor_records ORDER BY date_first_seen DESC"
+        ).fetchall()
         return [dict(r) for r in rows]

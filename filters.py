@@ -8,7 +8,9 @@ reason. Multi-word phrases (e.g. Polish "stacja transformatorowa") are stored as
 stems that must ALL appear somewhere in the text, since inflection can also change which exact
 word form glues to which in a phrase.
 """
-from config import ALL_KEYWORDS, BRANCH_HINTS, COMPANY_MATCH_TERMS, DISTRIBUTOR_ROLE_TERMS
+from config import (
+    ALL_KEYWORDS, BRANCH_HINTS, COMPANY_MATCH_TERMS, DISTRIBUTOR_ROLE_TERMS, INDUSTRIAL_DOMAIN_TERMS,
+)
 
 
 def _matches(keyword, haystack: str) -> bool:
@@ -45,6 +47,14 @@ def match_distributor_role(*texts: str) -> list:
     these terms are too generic (common Swiss trading-company boilerplate) to filter on alone."""
     haystack = " ".join(t for t in texts if t).lower()
     return [_label(kw) for kw in DISTRIBUTOR_ROLE_TERMS if _matches(kw, haystack)]
+
+
+def match_industrial_domain(*texts: str) -> list:
+    """Industrial machinery / marine equipment terms — see INDUSTRIAL_DOMAIN_TERMS docstring in
+    config.py. Used only by the separate distributor/broker/reseller report, always combined
+    (AND) with match_distributor_role()."""
+    haystack = " ".join(t for t in texts if t).lower()
+    return [_label(kw) for kw in INDUSTRIAL_DOMAIN_TERMS if _matches(kw, haystack)]
 
 
 def is_relevant_tender(*texts: str) -> tuple:

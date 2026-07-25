@@ -88,6 +88,30 @@ DISTRIBUTOR_ROLE_TERMS = [
     "dystrybucj", "pośrednictw", "hurt", "odsprzedaż",
 ]
 
+# Separate, standalone report (see sources/zefix_distributors.py): distribution/broker/reseller
+# companies (DISTRIBUTOR_ROLE_TERMS above) whose purpose ALSO mentions general industrial
+# machinery/equipment or marine/ship equipment — broader than the GIS/MV-HV-specific
+# COMPANY_MATCH_TERMS, but still bounded to technical/industrial branches, not "any industry".
+# Confirmed live: role-terms alone match ~29,900 CH companies (unusable); role+this list
+# narrows it to ~156 (2026-07-25) — a reviewable weekly size. Kept as its own list/report rather
+# than folded into COMPANY_MATCH_TERMS so the original curated GIS/MV-HV digest stays untouched.
+INDUSTRIAL_DOMAIN_TERMS = [
+    # Industrial machinery / equipment
+    "maschinenbau", "industriemaschinen", "industrieanlagen", "anlagenbau", "industrieausrüstung",
+    "machines industrielles", "équipement industriel", "construction de machines", "ingénierie industrielle",
+    "macchine industriali", "attrezzature industriali", "impianti industriali",
+    "industrial machinery", "industrial equipment", "machine building", "plant engineering",
+    # Ship / marine equipment
+    "schiffsausrüstung", "schiffbau", "schiffstechnik", "maritime ausrüstung",
+    "équipement naval", "construction navale", "équipement de navires",
+    "attrezzature navali", "cantieristica navale",
+    "marine equipment", "shipbuilding", "naval equipment", "vessel equipment", "maritime equipment",
+]
+
+# Toggle for the separate distributor/broker/reseller report (main.py runs it independently
+# of SOURCES_ENABLED above).
+DISTRIBUTOR_REPORT_ENABLED = True
+
 # Countries in scope
 COUNTRIES = ["DE", "CH", "PL"]
 

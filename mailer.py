@@ -11,7 +11,7 @@ from email.mime.text import MIMEText
 from datetime import date
 
 
-def send_digest(html: str, has_content: bool):
+def send_digest(html: str, has_content: bool, subject_prefix: str = "VAD Monitor"):
     to_addr = os.environ.get("DIGEST_TO")
     host = os.environ.get("SMTP_HOST")
     port = int(os.environ.get("SMTP_PORT", "587"))
@@ -22,7 +22,7 @@ def send_digest(html: str, has_content: bool):
         print("[mailer] skipped: SMTP_HOST/SMTP_USER/SMTP_PASS/DIGEST_TO not fully set")
         return
 
-    subject = f"VAD Monitor — {date.today().isoformat()}" + ("" if has_content else " (cisza w tym tygodniu)")
+    subject = f"{subject_prefix} — {date.today().isoformat()}" + ("" if has_content else " (cisza w tym tygodniu)")
     msg = MIMEText(html, "html", "utf-8")
     msg["Subject"] = subject
     msg["From"] = user

@@ -44,3 +44,25 @@ def write_dashboard():
     html = render_dashboard()
     (OUTPUT_DIR / "index.html").write_text(html, encoding="utf-8")
     print(f"[generate] wrote {OUTPUT_DIR / 'index.html'}")
+
+
+def render_distributors_email(new_records: list, dashboard_url: str) -> str:
+    tpl = env.get_template("distributors_email.html.j2")
+    return tpl.render(
+        run_date=date.today().isoformat(),
+        new_records=new_records,
+        dashboard_url=dashboard_url,
+    )
+
+
+def render_distributors_dashboard() -> str:
+    tpl = env.get_template("distributors_dashboard.html.j2")
+    records = storage.all_distributor_records()
+    return tpl.render(run_date=date.today().isoformat(), records=records)
+
+
+def write_distributors_dashboard():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    html = render_distributors_dashboard()
+    (OUTPUT_DIR / "distributors.html").write_text(html, encoding="utf-8")
+    print(f"[generate] wrote {OUTPUT_DIR / 'distributors.html'}")
