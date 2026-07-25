@@ -34,6 +34,6 @@ jobs:
         run: |
           git config user.name "vad-monitor-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/records.sqlite3 docs/index.html
+          git add data/records.sqlite3 docs/index.html docs/distributors.html
           git diff --cached --quiet || git commit -m "Weekly monitor update $(date -u +%Y-%m-%d)"
           git push
