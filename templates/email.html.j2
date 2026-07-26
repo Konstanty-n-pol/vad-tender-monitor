@@ -20,7 +20,7 @@ Cisza w tym tygodniu — brak nowych trafień powyżej progu istotności.
 {% endif %}
 
 {% macro flag(country) -%}
-{{ {"DE": "🇩🇪", "CH": "🇨🇭", "PL": "🇵🇱"}.get(country, "") }}
+{{ {"DE": "DEUTSCHLAND", "CH": "SWITZERLAND", "PL": "POLSKA"}.get(country, country) }}
 {%- endmacro %}
 
 {% if tenders %}

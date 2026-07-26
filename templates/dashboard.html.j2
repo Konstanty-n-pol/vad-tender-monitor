@@ -31,7 +31,7 @@
 <div class="wrap">
 <div class="controls">
   <input id="q" type="text" placeholder="Szukaj słowa kluczowego...">
-  <select id="country"><option value="">Wszystkie kraje</option><option value="DE">🇩🇪 DE</option><option value="CH">🇨🇭 CH</option><option value="PL">🇵🇱 PL</option></select>
+  <select id="country"><option value="">Wszystkie kraje</option><option value="DE">DEUTSCHLAND</option><option value="CH">SWITZERLAND</option><option value="PL">POLSKA</option></select>
   <select id="category"><option value="">Wszystkie kategorie</option><option value="tender">🔴 Przetargi</option><option value="company">🟡 Firmy</option><option value="news">⚪ Newsy</option></select>
   <select id="source"><option value="">Wszystkie źródła</option>{% for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
   <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
@@ -59,7 +59,7 @@
     data-tier="{{ r.commodity_tier or '' }}"
     data-expired="{{ r.expired }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
   <td>{{ {"tender": "🔴", "company": "🟡", "news": "⚪"}.get(r.category, "") }}</td>
-  <td>{{ {"DE": "🇩🇪", "CH": "🇨🇭", "PL": "🇵🇱"}.get(r.country, r.country) }}</td>
+  <td>{{ {"DE": "DEUTSCHLAND", "CH": "SWITZERLAND", "PL": "POLSKA"}.get(r.country, r.country) }}</td>
   <td><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></td>
   <td>{% if r.website %}<a href="{{ r.website }}" target="_blank">🔗</a>{% endif %}</td>
   <td>{{ r.buyer or "" }}</td>
