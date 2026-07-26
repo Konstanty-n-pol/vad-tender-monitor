@@ -27,20 +27,25 @@
 <div class="wrap">
 <div class="controls">
   <input id="q" type="text" placeholder="Szukaj słowa kluczowego...">
+  <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
 </div>
 
 <table id="tbl">
 <thead><tr>
 <th data-k="title">Firma</th>
+<th>WWW</th>
 <th data-k="buyer">Forma prawna / miejscowość</th>
+<th data-k="tier">Tier</th>
 <th data-k="date_first_seen">Wykryto</th>
 <th>Uzasadnienie</th>
 </tr></thead>
 <tbody>
 {% for r in records %}
-<tr data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
+<tr data-tier="{{ r.commodity_tier or '' }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
   <td><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></td>
+  <td>{% if r.website %}<a href="{{ r.website }}" target="_blank">🔗</a>{% endif %}</td>
   <td>{{ r.buyer or "" }}</td>
+  <td>{{ r.commodity_tier or "" }}</td>
   <td>{{ r.date_first_seen }}</td>
   <td>{{ r.reason }}</td>
 </tr>
@@ -50,13 +55,16 @@
 </div>
 
 <script>
-const q = document.getElementById('q');
-q.addEventListener('input', () => {
+const q = document.getElementById('q'), tier = document.getElementById('tier');
+function applyFilters() {
   const term = q.value.toLowerCase();
   document.querySelectorAll('#tbl tbody tr').forEach(row => {
-    row.style.display = (!term || row.dataset.text.includes(term)) ? "" : "none";
+    const okText = !term || row.dataset.text.includes(term);
+    const okTier = !tier.value || row.dataset.tier === tier.value;
+    row.style.display = (okText && okTier) ? "" : "none";
   });
-});
+}
+[q, tier].forEach(el => el.addEventListener('input', applyFilters));
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
   const key = th.dataset.k;
   const tbody = document.querySelector('#tbl tbody');

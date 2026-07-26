@@ -19,7 +19,7 @@ import requests
 from datetime import date
 from sources import Record
 from config import INDUSTRIAL_DOMAIN_TERMS, DISTRIBUTOR_ROLE_TERMS
-from filters import match_industrial_domain, match_distributor_role
+from filters import match_industrial_domain, match_distributor_role, classify_commodity_tier
 
 ENDPOINT = "https://lindas.admin.ch/query"
 TIMEOUT = 250  # combined two-regex query observed ~166s for a COUNT; give headroom for a full SELECT
@@ -127,6 +127,7 @@ def fetch() -> list:
             date_found=today,
             buyer=buyer_context,
             keywords_matched=domain_matched + role_matched,
+            commodity_tier=classify_commodity_tier(domain_matched + role_matched),
             reason=reason,
         ))
     return records

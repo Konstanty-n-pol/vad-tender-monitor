@@ -25,7 +25,7 @@
 <body>
 <header><div class="wrap">
 <h1>VAD Monitor — GIS/MV-HV części zamienne (DACH/CEE)</h1>
-<p>Ostatnia aktualizacja: 2026-07-25 · 34 pozycji w archiwum · <a href="distributors.html" style="color:#c0c0d0;">Dystrybutorzy/Broker/Reseller (CH) →</a></p>
+<p>Ostatnia aktualizacja: 2026-07-26 · 34 pozycji w archiwum · <a href="distributors.html" style="color:#c0c0d0;">Dystrybutorzy/Broker/Reseller (CH) →</a></p>
 </div></header>
 
 <div class="wrap">
@@ -34,6 +34,7 @@
   <select id="country"><option value="">Wszystkie kraje</option><option value="DE">🇩🇪 DE</option><option value="CH">🇨🇭 CH</option><option value="PL">🇵🇱 PL</option></select>
   <select id="category"><option value="">Wszystkie kategorie</option><option value="tender">🔴 Przetargi</option><option value="company">🟡 Firmy</option><option value="news">⚪ Newsy</option></select>
   <select id="source"><option value="">Wszystkie źródła</option><option value="ted">ted</option><option value="zefix">zefix</option></select>
+  <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
   <label style="font-size:13px;"><input type="checkbox" id="hideExpired"> ukryj przeterminowane</label>
 </div>
 
@@ -42,7 +43,9 @@
 <th data-k="category">Kat.</th>
 <th data-k="country">Kraj</th>
 <th data-k="title">Tytuł</th>
+<th>WWW</th>
 <th data-k="buyer">Zamawiający</th>
+<th data-k="tier">Tier</th>
 <th data-k="source">Źródło</th>
 <th data-k="date_first_seen">Wykryto</th>
 <th data-k="days_since">Dni od wykrycia</th>
@@ -53,476 +56,578 @@
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="rotima ltd aktiengesellschaft, stäfa elektrotechnik">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/156502" target="_blank">Rotima Ltd</a></td>
+  <td><a href="https://rotima.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Stäfa</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: elektrotechnik; Stäfa</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="pfisterer switzerland ltd. aktiengesellschaft, küssnacht (sz) elektrotechnik">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/167353" target="_blank">PFISTERER Switzerland Ltd.</a></td>
+  <td><a href="https://www.pfisterer.com" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Küssnacht (SZ)</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: elektrotechnik; Küssnacht (SZ)</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="genossenschaft elektrizitätswerk bivio genossenschaft, surses transformator">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/231234" target="_blank">Genossenschaft Elektrizitätswerk Bivio</a></td>
+  <td></td>
   <td>Genossenschaft, Surses</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: transformator; Surses</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="lincoln sa aktiengesellschaft, zürich elektrotechnik">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/500929" target="_blank">LINCOLN SA</a></td>
+  <td></td>
   <td>Aktiengesellschaft, Zürich</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: elektrotechnik; Zürich</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="sotax holding sa aktiengesellschaft, aesch (bl) elektrotechnik">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/502476" target="_blank">Sotax Holding SA</a></td>
+  <td><a href="https://www.sotax.com" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Aesch (BL)</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: elektrotechnik; Aesch (BL)</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="general power distribution ltd. liab. co. gesellschaft mit beschränkter haftung gmbh / sarl, neerach power distribution">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/524680" target="_blank">General Power Distribution Ltd. liab. Co.</a></td>
+  <td></td>
   <td>Gesellschaft mit beschränkter Haftung GMBH / SARL, Neerach</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: power distribution; Neerach</td>
 </tr>
 
 <tr class="cat-tender"
     data-country="DE" data-category="tender" data-source="ted"
+    data-tier="Tier 1"
     data-expired="0" data-text="tyskland-freiburg im breisgau: transformatorunderstation freiburger verkehrs ag transformator">
   <td>🔴</td>
   <td>🇩🇪</td>
   <td><a href="https://ted.europa.eu/en/notice/-/detail/265281-2016" target="_blank">Tyskland-Freiburg im Breisgau: Transformatorunderstation</a></td>
+  <td></td>
   <td>Freiburger Verkehrs AG</td>
+  <td>Tier 1</td>
   <td>ted</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>słowo kluczowe: transformator; zamawiający: Freiburger Verkehrs AG</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="electro-universal sa aktiengesellschaft, orpund elektrotechnik">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/50922" target="_blank">Electro-Universal SA</a></td>
+  <td></td>
   <td>Aktiengesellschaft, Orpund</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: elektrotechnik; Orpund</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="fischer electric sa aktiengesellschaft, orpund schaltanlage,vertrieb">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/59414" target="_blank">FISCHER ELECTRIC SA</a></td>
+  <td><a href="https://fischerelectric.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Orpund</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (vertrieb) + schaltanlage; Orpund</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="gruneko sa en liquidation aktiengesellschaft, basel energieversorgung">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/74232" target="_blank">Gruneko SA en liquidation</a></td>
+  <td></td>
   <td>Aktiengesellschaft, Basel</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: energieversorgung; Basel</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="heblo sa aktiengesellschaft, himmelried transformator,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/78424" target="_blank">Heblo SA</a></td>
+  <td><a href="https://www.heblo.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Himmelried</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + transformator; Himmelried</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="isomet sa aktiengesellschaft, otelfingen elektrotechnik,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/92464" target="_blank">Isomet SA</a></td>
+  <td><a href="https://www.isomet.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Otelfingen</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + elektrotechnik; Otelfingen</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="iub engineering sa aktiengesellschaft, bern elektrotechnik">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/92870" target="_blank">IUB Engineering SA</a></td>
+  <td><a href="https://www.engineering-group.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Bern</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: elektrotechnik; Bern</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="moser-glaser & co sa aktiengesellschaft, muttenz transformator">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/122624" target="_blank">Moser-Glaser & Co SA</a></td>
+  <td><a href="https://www.mgc.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Muttenz</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: transformator; Muttenz</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="schaeffler suisse sàrl gesellschaft mit beschränkter haftung gmbh / sarl, romanshorn elektrotechnik,vertrieb,vermittlung">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/129287" target="_blank">Schaeffler Suisse Sàrl</a></td>
+  <td><a href="https://www.schaeffler.ch" target="_blank">🔗</a></td>
   <td>Gesellschaft mit beschränkter Haftung GMBH / SARL, Romanshorn</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (vertrieb) + elektrotechnik; Romanshorn</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="pi projecting sa aktiengesellschaft, geroldswil elektrotechnik,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/136231" target="_blank">Pi Projecting SA</a></td>
+  <td></td>
   <td>Aktiengesellschaft, Geroldswil</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + elektrotechnik; Geroldswil</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="polycontact sa aktiengesellschaft, chur elektrotechnik,handel,vertrieb,vermittlung">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/138189" target="_blank">Polycontact SA</a></td>
+  <td><a href="https://polycontact.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Chur</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + elektrotechnik; Chur</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="schurter sa aktiengesellschaft, luzern elektrotechnik,handel,hurt">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/165340" target="_blank">Schurter SA</a></td>
+  <td><a href="https://www.schurter.com" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Luzern</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + elektrotechnik; Luzern</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="baumüller (suisse) sa aktiengesellschaft, frauenfeld schaltanlage,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/223168" target="_blank">Baumüller (Suisse) SA</a></td>
+  <td><a href="https://www.baumueller.com/de/unternehmen/standorte/baumueller-suisse" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Frauenfeld</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + schaltanlage; Frauenfeld</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="kentronic sa aktiengesellschaft, dietikon elektrotechnik,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/265305" target="_blank">KENTRONIC SA</a></td>
+  <td></td>
   <td>Aktiengesellschaft, Dietikon</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + elektrotechnik; Dietikon</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="bischof schaltanlagen sa aktiengesellschaft, andwil (sg) schaltanlage,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/281221" target="_blank">Bischof Schaltanlagen SA</a></td>
+  <td><a href="https://www.schaltanlagen.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Andwil (SG)</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + schaltanlage; Andwil (SG)</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="fondation suisse de l'energie stiftung, zürich energieversorgung">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/292932" target="_blank">Fondation Suisse de l'Energie</a></td>
+  <td><a href="https://www.energiestiftung.ch" target="_blank">🔗</a></td>
   <td>Stiftung, Zürich</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: energieversorgung; Zürich</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="gasotec sa aktiengesellschaft, stans energieversorgung,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/334422" target="_blank">Gasotec SA</a></td>
+  <td><a href="https://www.gasotec.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Stans</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + energieversorgung; Stans</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="windcraft sa aktiengesellschaft, kloten energieversorgung">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/342865" target="_blank">WINDCRAFT SA</a></td>
+  <td><a href="https://www.windcraft.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Kloten</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: energieversorgung; Kloten</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="presspart sa aktiengesellschaft, nidau gussteil,vertrieb">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/360857" target="_blank">Presspart SA</a></td>
+  <td><a href="https://www.presspart.com" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Nidau</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (vertrieb) + gussteil; Nidau</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="siemens suisse sa aktiengesellschaft, zürich elektrotechnik,vertrieb">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/368195" target="_blank">Siemens Suisse SA</a></td>
+  <td><a href="https://www.siemens.com/ch/de.html" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Zürich</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (vertrieb) + elektrotechnik; Zürich</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="psi neplan sa aktiengesellschaft, küsnacht (zh) energieversorgung,vertrieb">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/386657" target="_blank">PSI NEPLAN SA</a></td>
+  <td><a href="https://www.neplan.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Küsnacht (ZH)</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (vertrieb) + energieversorgung; Küsnacht (ZH)</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="johnson electric international sa aktiengesellschaft, murten elektrotechnik">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/403862" target="_blank">Johnson Electric International SA</a></td>
+  <td><a href="https://www.johnsonelectric.com" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Murten</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: elektrotechnik; Murten</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="mensch und maschine suisse sa aktiengesellschaft, winkel elektrotechnik,vertrieb">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/415382" target="_blank">Mensch und Maschine Suisse SA</a></td>
+  <td><a href="https://fr.mum.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Winkel</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (vertrieb) + elektrotechnik; Winkel</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 2"
     data-expired="0" data-text="indupart sa aktiengesellschaft, zürich elektrotechnik,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/422973" target="_blank">InduPart SA</a></td>
+  <td><a href="https://www.indupart.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Zürich</td>
+  <td>Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + elektrotechnik; Zürich</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1 + Tier 2"
     data-expired="0" data-text="usat union suisse automation et tableaux électriques verein, biel/bienne schaltanlage,schaltanlagenbau">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/436371" target="_blank">USAT Union Suisse Automation et Tableaux électriques</a></td>
+  <td><a href="https://www.vsas.ch/union/" target="_blank">🔗</a></td>
   <td>Verein, Biel/Bienne</td>
+  <td>Tier 1 + Tier 2</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: schaltanlage; Biel/Bienne</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="h & e elektro sa aktiengesellschaft, kloten schaltanlage,handel">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/439715" target="_blank">H & E Elektro SA</a></td>
+  <td><a href="http://www.he-elektro.ch" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Kloten</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (handel) + schaltanlage; Kloten</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="haefely sa aktiengesellschaft, basel mittelspannung,hochspannung">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/458610" target="_blank">Haefely SA</a></td>
+  <td><a href="https://www.haefely.com" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Basel</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>cel działalności zawiera: mittelspannung; Basel</td>
 </tr>
 
 <tr class="cat-company"
     data-country="CH" data-category="company" data-source="zefix"
+    data-tier="Tier 1"
     data-expired="0" data-text="r. stahl suisse sa aktiengesellschaft, unterentfelden schaltanlage,vertrieb">
   <td>🟡</td>
   <td>🇨🇭</td>
   <td><a href="https://register.ld.admin.ch/zefix/company/460757" target="_blank">R. STAHL Suisse SA</a></td>
+  <td><a href="https://r-stahl.com" target="_blank">🔗</a></td>
   <td>Aktiengesellschaft, Unterentfelden</td>
+  <td>Tier 1</td>
   <td>zefix</td>
   <td>2026-07-24</td>
-  <td class="days">1</td>
+  <td class="days">2</td>
   <td></td>
   <td>dystrybucja/handel (vertrieb) + schaltanlage; Unterentfelden</td>
 </tr>
@@ -534,7 +639,7 @@
 <script>
 const q = document.getElementById('q'), country = document.getElementById('country'),
       category = document.getElementById('category'), source = document.getElementById('source'),
-      hideExpired = document.getElementById('hideExpired');
+      tier = document.getElementById('tier'), hideExpired = document.getElementById('hideExpired');
 function applyFilters() {
   const term = q.value.toLowerCase();
   document.querySelectorAll('#tbl tbody tr').forEach(row => {
@@ -542,11 +647,12 @@ function applyFilters() {
     const okCountry = !country.value || row.dataset.country === country.value;
     const okCategory = !category.value || row.dataset.category === category.value;
     const okSource = !source.value || row.dataset.source === source.value;
+    const okTier = !tier.value || row.dataset.tier === tier.value;
     const okExpired = !hideExpired.checked || row.dataset.expired !== "True";
-    row.style.display = (okText && okCountry && okCategory && okSource && okExpired) ? "" : "none";
+    row.style.display = (okText && okCountry && okCategory && okSource && okTier && okExpired) ? "" : "none";
   });
 }
-[q, country, category, source, hideExpired].forEach(el => el.addEventListener('input', applyFilters));
+[q, country, category, source, tier, hideExpired].forEach(el => el.addEventListener('input', applyFilters));
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
   const key = th.dataset.k;
   const tbody = document.querySelector('#tbl tbody');

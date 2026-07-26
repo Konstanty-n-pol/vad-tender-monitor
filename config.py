@@ -112,6 +112,39 @@ INDUSTRIAL_DOMAIN_TERMS = [
 # of SOURCES_ENABLED above).
 DISTRIBUTOR_REPORT_ENABLED = True
 
+# Commodity tier classification, applied on top of already-matched keywords purely for display —
+# see filters.classify_commodity_tier(). Never gates inclusion; a record is already relevant by
+# the time this runs. Tier 1 = the core GIS/MV-HV switchgear commodities this business deals in
+# directly (the actual products). Tier 2 = supporting/adjacent commodities and broader branch
+# descriptors (general industrial machinery, marine equipment, generic "electrical engineering"
+# sector language) — still relevant, but one step removed from the core product.
+# NOTE: entries here must match the *label* form produced by filters._label() — tuples like
+# ("dystrybucj", "energi") become the space-joined string "dystrybucj energi" once matched.
+COMMODITY_TIER_1_TERMS = {
+    "mittelspannung", "hochspannung", "moyenne tension", "haute tension",
+    "alta tensione", "media tensione",
+    "schaltanlage", "switchgear", "poste électrique", "sous-station", "sottostazione",
+    "substation", "umspannwerk", "trafostation",
+    "leistungsschalter", "circuit breaker",
+    "trennschalter", "disconnector", "disjoncteur", "sectionneur", "interruttore",
+    "transformator", "sf6", "schaltschrank", "schaltfeld",
+}
+
+COMMODITY_TIER_2_TERMS = {
+    "gussteil",
+    "elektrotechnik", "energieversorgung", "schaltanlagenbau",
+    "electrical engineering", "power distribution", "switchgear manufactur",
+    "energetyk", "dystrybucj energi",
+    "maschinenbau", "industriemaschinen", "industrieanlagen", "anlagenbau", "industrieausrüstung",
+    "machines industrielles", "équipement industriel", "construction de machines", "ingénierie industrielle",
+    "macchine industriali", "attrezzature industriali", "impianti industriali",
+    "industrial machinery", "industrial equipment", "machine building", "plant engineering",
+    "schiffsausrüstung", "schiffbau", "schiffstechnik", "maritime ausrüstung",
+    "équipement naval", "construction navale", "équipement de navires",
+    "attrezzature navali", "cantieristica navale",
+    "marine equipment", "shipbuilding", "naval equipment", "vessel equipment", "maritime equipment",
+}
+
 # Countries in scope
 COUNTRIES = ["DE", "CH", "PL"]
 

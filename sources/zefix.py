@@ -44,7 +44,7 @@ import requests
 from datetime import date
 from sources import Record
 from config import COMPANY_MATCH_TERMS
-from filters import match_company_purpose, match_distributor_role
+from filters import match_company_purpose, match_distributor_role, classify_commodity_tier
 
 ENDPOINT = "https://lindas.admin.ch/query"
 TIMEOUT = 150  # the full-register regex scan is genuinely slow, see module docstring
@@ -157,6 +157,7 @@ def fetch() -> list:
             buyer=buyer_context,
             keywords_matched=matched + role_matched,
             reason=reason,
+            commodity_tier=classify_commodity_tier(matched + role_matched),
         ))
     return records
 

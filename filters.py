@@ -10,6 +10,7 @@ word form glues to which in a phrase.
 """
 from config import (
     ALL_KEYWORDS, BRANCH_HINTS, COMPANY_MATCH_TERMS, DISTRIBUTOR_ROLE_TERMS, INDUSTRIAL_DOMAIN_TERMS,
+    COMMODITY_TIER_1_TERMS, COMMODITY_TIER_2_TERMS,
 )
 
 
@@ -55,6 +56,21 @@ def match_industrial_domain(*texts: str) -> list:
     (AND) with match_distributor_role()."""
     haystack = " ".join(t for t in texts if t).lower()
     return [_label(kw) for kw in INDUSTRIAL_DOMAIN_TERMS if _matches(kw, haystack)]
+
+
+def classify_commodity_tier(matched_keywords: list) -> str:
+    """Label already-matched keywords as Tier 1 (core switchgear commodities), Tier 2 (adjacent
+    industrial/marine equipment or broad branch language), both, or "" — purely informational,
+    never gates inclusion. See COMMODITY_TIER_1_TERMS/_2_TERMS in config.py."""
+    has_tier1 = any(kw in COMMODITY_TIER_1_TERMS for kw in matched_keywords)
+    has_tier2 = any(kw in COMMODITY_TIER_2_TERMS for kw in matched_keywords)
+    if has_tier1 and has_tier2:
+        return "Tier 1 + Tier 2"
+    if has_tier1:
+        return "Tier 1"
+    if has_tier2:
+        return "Tier 2"
+    return ""
 
 
 def is_relevant_tender(*texts: str) -> tuple:

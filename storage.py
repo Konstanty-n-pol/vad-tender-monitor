@@ -42,6 +42,17 @@ CREATE TABLE IF NOT EXISTS distributor_records (
 );
 """
 
+# Columns added after the initial schema — applied via ALTER TABLE for existing databases.
+# `website` is never written by the automated fetch (Zefix/LINDAS has no such field); it's only
+# ever set by a one-off manual enrichment pass (see enrich_websites.py) and preserved across
+# weekly upserts. `commodity_tier` is deterministic and refreshed on every upsert.
+_MIGRATIONS = [
+    ("records", "commodity_tier", "TEXT"),
+    ("records", "website", "TEXT"),
+    ("distributor_records", "commodity_tier", "TEXT"),
+    ("distributor_records", "website", "TEXT"),
+]
+
 
 @contextmanager
 def connect():
@@ -49,6 +60,11 @@ def connect():
     conn = sqlite3.connect(DB_PATH)
     conn.execute(SCHEMA)
     conn.execute(DISTRIBUTOR_SCHEMA)
+    for table, column, coltype in _MIGRATIONS:
+        try:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {coltype}")
+        except sqlite3.OperationalError:
+            pass  # column already exists
     try:
         yield conn
         conn.commit()
@@ -68,17 +84,19 @@ def upsert_records(records) -> list:
             ).fetchone()
             if existing:
                 conn.execute(
-                    "UPDATE records SET date_last_seen = ?, deadline = ? WHERE dedup_key = ?",
-                    (today, r.deadline, key),
+                    "UPDATE records SET date_last_seen = ?, deadline = ?, commodity_tier = ? WHERE dedup_key = ?",
+                    (today, r.deadline, r.commodity_tier, key),
                 )
             else:
                 conn.execute(
                     """INSERT INTO records
                     (dedup_key, title, url, source, country, category, buyer, deadline,
-                     value_estimate, keywords_matched, reason, date_first_seen, date_last_seen, expired)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)""",
+                     value_estimate, keywords_matched, reason, date_first_seen, date_last_seen, expired,
+                     commodity_tier, website)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)""",
                     (key, r.title, r.url, r.source, r.country, r.category, r.buyer, r.deadline,
-                     r.value_estimate, ",".join(r.keywords_matched), r.reason, today, today),
+                     r.value_estimate, ",".join(r.keywords_matched), r.reason, today, today,
+                     r.commodity_tier, r.website),
                 )
                 new_records.append(r)
         # mark expired tenders whose deadline has passed
@@ -109,17 +127,18 @@ def upsert_distributor_records(records) -> list:
             ).fetchone()
             if existing:
                 conn.execute(
-                    "UPDATE distributor_records SET date_last_seen = ? WHERE dedup_key = ?",
-                    (today, key),
+                    "UPDATE distributor_records SET date_last_seen = ?, commodity_tier = ? WHERE dedup_key = ?",
+                    (today, r.commodity_tier, key),
                 )
             else:
                 conn.execute(
                     """INSERT INTO distributor_records
                     (dedup_key, title, url, source, country, buyer, keywords_matched, reason,
-                     date_first_seen, date_last_seen)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                     date_first_seen, date_last_seen, commodity_tier, website)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (key, r.title, r.url, r.source, r.country, r.buyer,
-                     ",".join(r.keywords_matched), r.reason, today, today),
+                     ",".join(r.keywords_matched), r.reason, today, today,
+                     r.commodity_tier, r.website),
                 )
                 new_records.append(r)
     return new_records
@@ -132,3 +151,11 @@ def all_distributor_records():
             "SELECT * FROM distributor_records ORDER BY date_first_seen DESC"
         ).fetchall()
         return [dict(r) for r in rows]
+
+
+def set_website(table: str, dedup_key: str, website: str):
+    """One-off manual enrichment write — see Record.website docstring. `table` must be
+    'records' or 'distributor_records'."""
+    assert table in ("records", "distributor_records")
+    with connect() as conn:
+        conn.execute(f"UPDATE {table} SET website = ? WHERE dedup_key = ?", (website, dedup_key))

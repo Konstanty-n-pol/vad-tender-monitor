@@ -34,6 +34,7 @@
   <select id="country"><option value="">Wszystkie kraje</option><option value="DE">🇩🇪 DE</option><option value="CH">🇨🇭 CH</option><option value="PL">🇵🇱 PL</option></select>
   <select id="category"><option value="">Wszystkie kategorie</option><option value="tender">🔴 Przetargi</option><option value="company">🟡 Firmy</option><option value="news">⚪ Newsy</option></select>
   <select id="source"><option value="">Wszystkie źródła</option>{% for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
+  <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
   <label style="font-size:13px;"><input type="checkbox" id="hideExpired"> ukryj przeterminowane</label>
 </div>
 
@@ -42,7 +43,9 @@
 <th data-k="category">Kat.</th>
 <th data-k="country">Kraj</th>
 <th data-k="title">Tytuł</th>
+<th>WWW</th>
 <th data-k="buyer">Zamawiający</th>
+<th data-k="tier">Tier</th>
 <th data-k="source">Źródło</th>
 <th data-k="date_first_seen">Wykryto</th>
 <th data-k="days_since">Dni od wykrycia</th>
@@ -53,11 +56,14 @@
 {% for r in records %}
 <tr class="cat-{{ r.category }}{% if r.expired %} expired{% endif %}"
     data-country="{{ r.country }}" data-category="{{ r.category }}" data-source="{{ r.source }}"
+    data-tier="{{ r.commodity_tier or '' }}"
     data-expired="{{ r.expired }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
   <td>{{ {"tender": "🔴", "company": "🟡", "news": "⚪"}.get(r.category, "") }}</td>
   <td>{{ {"DE": "🇩🇪", "CH": "🇨🇭", "PL": "🇵🇱"}.get(r.country, r.country) }}</td>
   <td><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></td>
+  <td>{% if r.website %}<a href="{{ r.website }}" target="_blank">🔗</a>{% endif %}</td>
   <td>{{ r.buyer or "" }}</td>
+  <td>{{ r.commodity_tier or "" }}</td>
   <td>{{ r.source }}</td>
   <td>{{ r.date_first_seen }}</td>
   <td class="days">{{ r.days_since }}</td>
@@ -72,7 +78,7 @@
 <script>
 const q = document.getElementById('q'), country = document.getElementById('country'),
       category = document.getElementById('category'), source = document.getElementById('source'),
-      hideExpired = document.getElementById('hideExpired');
+      tier = document.getElementById('tier'), hideExpired = document.getElementById('hideExpired');
 function applyFilters() {
   const term = q.value.toLowerCase();
   document.querySelectorAll('#tbl tbody tr').forEach(row => {
@@ -80,11 +86,12 @@ function applyFilters() {
     const okCountry = !country.value || row.dataset.country === country.value;
     const okCategory = !category.value || row.dataset.category === category.value;
     const okSource = !source.value || row.dataset.source === source.value;
+    const okTier = !tier.value || row.dataset.tier === tier.value;
     const okExpired = !hideExpired.checked || row.dataset.expired !== "True";
-    row.style.display = (okText && okCountry && okCategory && okSource && okExpired) ? "" : "none";
+    row.style.display = (okText && okCountry && okCategory && okSource && okTier && okExpired) ? "" : "none";
   });
 }
-[q, country, category, source, hideExpired].forEach(el => el.addEventListener('input', applyFilters));
+[q, country, category, source, tier, hideExpired].forEach(el => el.addEventListener('input', applyFilters));
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
   const key = th.dataset.k;
   const tbody = document.querySelector('#tbl tbody');
