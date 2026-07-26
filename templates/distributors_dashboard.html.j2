@@ -16,6 +16,9 @@
   a { color: #1a1a2e; }
   .wrap { max-width: 1100px; margin: 0 auto; padding-bottom: 40px; }
   .back { font-size: 13px; }
+  tr.starred { background: #fff8e1; }
+  .star-cell { text-align: center; }
+  .star-cell input { width: 16px; height: 16px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -28,10 +31,12 @@
 <div class="controls">
   <input id="q" type="text" placeholder="Szukaj słowa kluczowego...">
   <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
+  <label style="font-size:13px;"><input type="checkbox" id="onlyStarred"> tylko oznaczone ★</label>
 </div>
 
 <table id="tbl">
 <thead><tr>
+<th>★</th>
 <th data-k="title">Firma</th>
 <th>WWW</th>
 <th data-k="buyer">Forma prawna / miejscowość</th>
@@ -41,7 +46,8 @@
 </tr></thead>
 <tbody>
 {% for r in records %}
-<tr data-tier="{{ r.commodity_tier or '' }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
+<tr data-tier="{{ r.commodity_tier or '' }}" data-star-id="{{ r.dedup_key }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
+  <td class="star-cell"><input type="checkbox" class="star-check"></td>
   <td><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></td>
   <td>{% if r.website %}<a href="{{ r.website }}" target="_blank">🔗</a>{% endif %}</td>
   <td>{{ r.buyer or "" }}</td>
@@ -55,16 +61,35 @@
 </div>
 
 <script>
-const q = document.getElementById('q'), tier = document.getElementById('tier');
+const q = document.getElementById('q'), tier = document.getElementById('tier'),
+      onlyStarred = document.getElementById('onlyStarred');
+const STAR_KEY = 'vadMonitorStarredDistributors';
+function loadStarred() {
+  try { return JSON.parse(localStorage.getItem(STAR_KEY) || '{}'); } catch (e) { return {}; }
+}
+function saveStarred(obj) { localStorage.setItem(STAR_KEY, JSON.stringify(obj)); }
+const starred = loadStarred();
+document.querySelectorAll('#tbl tbody tr').forEach(row => {
+  const id = row.dataset.starId;
+  const box = row.querySelector('.star-check');
+  if (starred[id]) { box.checked = true; row.classList.add('starred'); }
+  box.addEventListener('change', () => {
+    if (box.checked) { starred[id] = true; row.classList.add('starred'); }
+    else { delete starred[id]; row.classList.remove('starred'); }
+    saveStarred(starred);
+    applyFilters();
+  });
+});
 function applyFilters() {
   const term = q.value.toLowerCase();
   document.querySelectorAll('#tbl tbody tr').forEach(row => {
     const okText = !term || row.dataset.text.includes(term);
     const okTier = !tier.value || row.dataset.tier === tier.value;
-    row.style.display = (okText && okTier) ? "" : "none";
+    const okStarred = !onlyStarred.checked || !!starred[row.dataset.starId];
+    row.style.display = (okText && okTier && okStarred) ? "" : "none";
   });
 }
-[q, tier].forEach(el => el.addEventListener('input', applyFilters));
+[q, tier, onlyStarred].forEach(el => el.addEventListener('input', applyFilters));
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
   const key = th.dataset.k;
   const tbody = document.querySelector('#tbl tbody');
