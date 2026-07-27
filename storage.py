@@ -53,6 +53,18 @@ _MIGRATIONS = [
     ("distributor_records", "commodity_tier", "TEXT"),
     ("distributor_records", "website", "TEXT"),
     ("distributor_records", "activity_category", "TEXT"),
+    # One-off LLM classification pass (llm_classify.py) — never written by the automated
+    # keyword-matching fetch, only by running that script manually.
+    ("records", "llm_summary", "TEXT"),
+    ("records", "llm_product_tags", "TEXT"),
+    ("records", "llm_business_model", "TEXT"),
+    ("records", "llm_relevance", "TEXT"),
+    ("records", "llm_relevance_reason", "TEXT"),
+    ("distributor_records", "llm_summary", "TEXT"),
+    ("distributor_records", "llm_product_tags", "TEXT"),
+    ("distributor_records", "llm_business_model", "TEXT"),
+    ("distributor_records", "llm_relevance", "TEXT"),
+    ("distributor_records", "llm_relevance_reason", "TEXT"),
 ]
 
 
@@ -165,3 +177,22 @@ def set_website(table: str, dedup_key: str, website: str):
     assert table in ("records", "distributor_records")
     with connect() as conn:
         conn.execute(f"UPDATE {table} SET website = ? WHERE dedup_key = ?", (website, dedup_key))
+
+
+def set_llm_classification(table: str, dedup_key: str, classification) -> None:
+    """Write a one-off LLM classification result (llm_classify.CompanyClassification) — see
+    _MIGRATIONS docstring. `table` must be 'records' or 'distributor_records'."""
+    assert table in ("records", "distributor_records")
+    with connect() as conn:
+        conn.execute(
+            f"""UPDATE {table} SET llm_summary = ?, llm_product_tags = ?, llm_business_model = ?,
+                llm_relevance = ?, llm_relevance_reason = ? WHERE dedup_key = ?""",
+            (
+                classification.one_line_summary,
+                ",".join(classification.product_tags),
+                classification.business_model,
+                classification.relevance_to_switchgear,
+                classification.relevance_reason,
+                dedup_key,
+            ),
+        )

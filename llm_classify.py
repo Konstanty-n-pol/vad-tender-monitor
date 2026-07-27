@@ -96,10 +96,13 @@ def classify_company(name: str, description: str, model: str = DEFAULT_MODEL) ->
     client = _client()
     response = client.messages.create(
         model=model,
-        max_tokens=500,
+        # claude-sonnet-5 runs adaptive thinking by default when `thinking` is omitted, and
+        # max_tokens caps thinking + response text together — 500 was too tight and truncated
+        # the JSON mid-string. 2048 leaves headroom for both at effort=medium.
+        max_tokens=2048,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": _build_prompt(name, description)}],
-        output_config={"format": {"type": "json_schema", "schema": CLASSIFICATION_SCHEMA}},
+        output_config={"effort": "medium", "format": {"type": "json_schema", "schema": CLASSIFICATION_SCHEMA}},
     )
     text = next(b.text for b in response.content if b.type == "text")
     return CompanyClassification.model_validate_json(text)
@@ -120,10 +123,10 @@ def classify_companies_batch(
             custom_id=custom_id,
             params=MessageCreateParamsNonStreaming(
                 model=model,
-                max_tokens=500,
+                max_tokens=2048,  # see classify_company() — adaptive thinking shares this budget
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": _build_prompt(name, description)}],
-                output_config={"format": {"type": "json_schema", "schema": CLASSIFICATION_SCHEMA}},
+                output_config={"effort": "medium", "format": {"type": "json_schema", "schema": CLASSIFICATION_SCHEMA}},
             ),
         )
         for custom_id, name, description in companies
