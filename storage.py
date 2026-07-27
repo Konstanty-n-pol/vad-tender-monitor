@@ -49,8 +49,10 @@ CREATE TABLE IF NOT EXISTS distributor_records (
 _MIGRATIONS = [
     ("records", "commodity_tier", "TEXT"),
     ("records", "website", "TEXT"),
+    ("records", "activity_category", "TEXT"),
     ("distributor_records", "commodity_tier", "TEXT"),
     ("distributor_records", "website", "TEXT"),
+    ("distributor_records", "activity_category", "TEXT"),
 ]
 
 
@@ -84,19 +86,21 @@ def upsert_records(records) -> list:
             ).fetchone()
             if existing:
                 conn.execute(
-                    "UPDATE records SET date_last_seen = ?, deadline = ?, commodity_tier = ? WHERE dedup_key = ?",
-                    (today, r.deadline, r.commodity_tier, key),
+                    """UPDATE records SET date_last_seen = ?, deadline = ?, commodity_tier = ?,
+                       activity_category = ?, keywords_matched = ?, reason = ? WHERE dedup_key = ?""",
+                    (today, r.deadline, r.commodity_tier, r.activity_category,
+                     ",".join(r.keywords_matched), r.reason, key),
                 )
             else:
                 conn.execute(
                     """INSERT INTO records
                     (dedup_key, title, url, source, country, category, buyer, deadline,
                      value_estimate, keywords_matched, reason, date_first_seen, date_last_seen, expired,
-                     commodity_tier, website)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)""",
+                     commodity_tier, website, activity_category)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)""",
                     (key, r.title, r.url, r.source, r.country, r.category, r.buyer, r.deadline,
                      r.value_estimate, ",".join(r.keywords_matched), r.reason, today, today,
-                     r.commodity_tier, r.website),
+                     r.commodity_tier, r.website, r.activity_category),
                 )
                 new_records.append(r)
         # mark expired tenders whose deadline has passed
@@ -127,18 +131,20 @@ def upsert_distributor_records(records) -> list:
             ).fetchone()
             if existing:
                 conn.execute(
-                    "UPDATE distributor_records SET date_last_seen = ?, commodity_tier = ? WHERE dedup_key = ?",
-                    (today, r.commodity_tier, key),
+                    """UPDATE distributor_records SET date_last_seen = ?, commodity_tier = ?,
+                       activity_category = ?, keywords_matched = ?, reason = ? WHERE dedup_key = ?""",
+                    (today, r.commodity_tier, r.activity_category,
+                     ",".join(r.keywords_matched), r.reason, key),
                 )
             else:
                 conn.execute(
                     """INSERT INTO distributor_records
                     (dedup_key, title, url, source, country, buyer, keywords_matched, reason,
-                     date_first_seen, date_last_seen, commodity_tier, website)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                     date_first_seen, date_last_seen, commodity_tier, website, activity_category)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (key, r.title, r.url, r.source, r.country, r.buyer,
                      ",".join(r.keywords_matched), r.reason, today, today,
-                     r.commodity_tier, r.website),
+                     r.commodity_tier, r.website, r.activity_category),
                 )
                 new_records.append(r)
     return new_records

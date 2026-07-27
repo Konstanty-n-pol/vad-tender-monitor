@@ -31,6 +31,7 @@
 <div class="controls">
   <input id="q" type="text" placeholder="Szukaj słowa kluczowego...">
   <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
+  <select id="activityCategory"><option value="">Wszystkie kategorie działalności</option>{% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
   <label style="font-size:13px;"><input type="checkbox" id="onlyStarred"> tylko oznaczone ★</label>
 </div>
 
@@ -41,17 +42,20 @@
 <th>WWW</th>
 <th data-k="buyer">Forma prawna / miejscowość</th>
 <th data-k="tier">Tier</th>
+<th data-k="activityCategory">Kategoria działalności</th>
 <th data-k="date_first_seen">Wykryto</th>
 <th>Uzasadnienie</th>
 </tr></thead>
 <tbody>
 {% for r in records %}
-<tr data-tier="{{ r.commodity_tier or '' }}" data-star-id="{{ r.dedup_key }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
+<tr data-tier="{{ r.commodity_tier or '' }}" data-activity-category="{{ r.activity_category or '' }}"
+    data-star-id="{{ r.dedup_key }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
   <td class="star-cell"><input type="checkbox" class="star-check"></td>
   <td><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></td>
   <td>{% if r.website %}<a href="{{ r.website }}" target="_blank">🔗</a>{% endif %}</td>
   <td>{{ r.buyer or "" }}</td>
   <td>{{ r.commodity_tier or "" }}</td>
+  <td>{{ r.activity_category or "" }}</td>
   <td>{{ r.date_first_seen }}</td>
   <td>{{ r.reason }}</td>
 </tr>
@@ -62,6 +66,7 @@
 
 <script>
 const q = document.getElementById('q'), tier = document.getElementById('tier'),
+      activityCategory = document.getElementById('activityCategory'),
       onlyStarred = document.getElementById('onlyStarred');
 const STAR_KEY = 'vadMonitorStarredDistributors';
 function loadStarred() {
@@ -85,11 +90,12 @@ function applyFilters() {
   document.querySelectorAll('#tbl tbody tr').forEach(row => {
     const okText = !term || row.dataset.text.includes(term);
     const okTier = !tier.value || row.dataset.tier === tier.value;
+    const okActivityCategory = !activityCategory.value || row.dataset.activityCategory === activityCategory.value;
     const okStarred = !onlyStarred.checked || !!starred[row.dataset.starId];
-    row.style.display = (okText && okTier && okStarred) ? "" : "none";
+    row.style.display = (okText && okTier && okActivityCategory && okStarred) ? "" : "none";
   });
 }
-[q, tier, onlyStarred].forEach(el => el.addEventListener('input', applyFilters));
+[q, tier, activityCategory, onlyStarred].forEach(el => el.addEventListener('input', applyFilters));
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
   const key = th.dataset.k;
   const tbody = document.querySelector('#tbl tbody');

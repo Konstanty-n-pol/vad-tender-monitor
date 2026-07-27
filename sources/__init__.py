@@ -18,6 +18,7 @@ class Record:
     keywords_matched: list = field(default_factory=list)
     reason: str = ""       # 1-line "why this matched" for the digest
     commodity_tier: str = ""    # "Tier 1" | "Tier 2" | "Tier 1 + Tier 2" | "" — see filters.classify_commodity_tier
+    activity_category: str = ""  # e.g. "Rozdzielnice / Switchgear" — see filters.classify_activity_category
     website: Optional[str] = None  # company's own site, if known. Zefix/LINDAS has no such field —
                                      # this is only ever populated by a one-off manual enrichment
                                      # pass, never by the automated weekly fetch. See storage.py.

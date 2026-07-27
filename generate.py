@@ -36,7 +36,8 @@ def render_dashboard() -> str:
     for r in records:
         r["days_since"] = _days_since(r["date_first_seen"])
     sources = sorted({r["source"] for r in records})
-    return tpl.render(run_date=date.today().isoformat(), records=records, sources=sources)
+    categories = sorted({r["activity_category"] for r in records if r["activity_category"]})
+    return tpl.render(run_date=date.today().isoformat(), records=records, sources=sources, categories=categories)
 
 
 def write_dashboard():
@@ -58,7 +59,8 @@ def render_distributors_email(new_records: list, dashboard_url: str) -> str:
 def render_distributors_dashboard() -> str:
     tpl = env.get_template("distributors_dashboard.html.j2")
     records = storage.all_distributor_records()
-    return tpl.render(run_date=date.today().isoformat(), records=records)
+    categories = sorted({r["activity_category"] for r in records if r["activity_category"]})
+    return tpl.render(run_date=date.today().isoformat(), records=records, categories=categories)
 
 
 def write_distributors_dashboard():

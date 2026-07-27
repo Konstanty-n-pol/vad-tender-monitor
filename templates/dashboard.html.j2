@@ -38,6 +38,7 @@
   <select id="category"><option value="">Wszystkie kategorie</option><option value="tender">🔴 Przetargi</option><option value="company">🟡 Firmy</option><option value="news">⚪ Newsy</option></select>
   <select id="source"><option value="">Wszystkie źródła</option>{% for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
   <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
+  <select id="activityCategory"><option value="">Wszystkie kategorie działalności</option>{% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
   <label style="font-size:13px;"><input type="checkbox" id="hideExpired"> ukryj przeterminowane</label>
   <label style="font-size:13px;"><input type="checkbox" id="onlyStarred"> tylko oznaczone ★</label>
 </div>
@@ -51,6 +52,7 @@
 <th>WWW</th>
 <th data-k="buyer">Zamawiający</th>
 <th data-k="tier">Tier</th>
+<th data-k="activityCategory">Kategoria działalności</th>
 <th data-k="source">Źródło</th>
 <th data-k="date_first_seen">Wykryto</th>
 <th data-k="days_since">Dni od wykrycia</th>
@@ -61,7 +63,8 @@
 {% for r in records %}
 <tr class="cat-{{ r.category }}{% if r.expired %} expired{% endif %}"
     data-country="{{ r.country }}" data-category="{{ r.category }}" data-source="{{ r.source }}"
-    data-tier="{{ r.commodity_tier or '' }}" data-star-id="{{ r.dedup_key }}"
+    data-tier="{{ r.commodity_tier or '' }}" data-activity-category="{{ r.activity_category or '' }}"
+    data-star-id="{{ r.dedup_key }}"
     data-expired="{{ r.expired }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
   <td class="star-cell"><input type="checkbox" class="star-check"></td>
   <td>{{ {"tender": "🔴", "company": "🟡", "news": "⚪"}.get(r.category, "") }}</td>
@@ -70,6 +73,7 @@
   <td>{% if r.website %}<a href="{{ r.website }}" target="_blank">🔗</a>{% endif %}</td>
   <td>{{ r.buyer or "" }}</td>
   <td>{{ r.commodity_tier or "" }}</td>
+  <td>{{ r.activity_category or "" }}</td>
   <td>{{ r.source }}</td>
   <td>{{ r.date_first_seen }}</td>
   <td class="days">{{ r.days_since }}</td>
@@ -84,8 +88,8 @@
 <script>
 const q = document.getElementById('q'), country = document.getElementById('country'),
       category = document.getElementById('category'), source = document.getElementById('source'),
-      tier = document.getElementById('tier'), hideExpired = document.getElementById('hideExpired'),
-      onlyStarred = document.getElementById('onlyStarred');
+      tier = document.getElementById('tier'), activityCategory = document.getElementById('activityCategory'),
+      hideExpired = document.getElementById('hideExpired'), onlyStarred = document.getElementById('onlyStarred');
 const STAR_KEY = 'vadMonitorStarred';
 function loadStarred() {
   try { return JSON.parse(localStorage.getItem(STAR_KEY) || '{}'); } catch (e) { return {}; }
@@ -111,12 +115,13 @@ function applyFilters() {
     const okCategory = !category.value || row.dataset.category === category.value;
     const okSource = !source.value || row.dataset.source === source.value;
     const okTier = !tier.value || row.dataset.tier === tier.value;
+    const okActivityCategory = !activityCategory.value || row.dataset.activityCategory === activityCategory.value;
     const okExpired = !hideExpired.checked || row.dataset.expired !== "True";
     const okStarred = !onlyStarred.checked || !!starred[row.dataset.starId];
-    row.style.display = (okText && okCountry && okCategory && okSource && okTier && okExpired && okStarred) ? "" : "none";
+    row.style.display = (okText && okCountry && okCategory && okSource && okTier && okActivityCategory && okExpired && okStarred) ? "" : "none";
   });
 }
-[q, country, category, source, tier, hideExpired, onlyStarred].forEach(el => el.addEventListener('input', applyFilters));
+[q, country, category, source, tier, activityCategory, hideExpired, onlyStarred].forEach(el => el.addEventListener('input', applyFilters));
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
   const key = th.dataset.k;
   const tbody = document.querySelector('#tbl tbody');

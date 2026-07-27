@@ -19,7 +19,10 @@ import requests
 from datetime import date
 from sources import Record
 from config import INDUSTRIAL_DOMAIN_TERMS, DISTRIBUTOR_ROLE_TERMS
-from filters import match_industrial_domain, match_distributor_role, classify_commodity_tier
+from filters import (
+    match_industrial_domain, match_distributor_role, match_manufacturing,
+    classify_commodity_tier, classify_activity_category,
+)
 
 ENDPOINT = "https://lindas.admin.ch/query"
 TIMEOUT = 250  # combined two-regex query observed ~166s for a COUNT; give headroom for a full SELECT
@@ -110,14 +113,23 @@ def fetch() -> list:
         role_matched = match_distributor_role(*entry["names"], description)
         if not (domain_matched and role_matched):
             continue  # re-confirm both in Python; SPARQL side uses the same term lists
+        manufacturing_matched = match_manufacturing(*entry["names"], description)
 
         company_type = entry["company_type"]
         place = entry["place"]
         buyer_context = f"{company_type}, {place}".strip(", ") if (company_type or place) else None
-        reason = f"dystrybucja/handel ({role_matched[0]}) w branży: {domain_matched[0]}"
+        # Manufacturing-specific terms (Décolletage, Feinmechanik, ...) outrank the generic
+        # distributor-role label in the reason — see MANUFACTURING_TERMS docstring in config.py:
+        # a real machining shop shouldn't read as "dystrybucja/handel" just because its statutory
+        # purpose also carries boilerplate "Handel"/"Import/Export" language.
+        if manufacturing_matched:
+            reason = f"producent/obróbka mechaniczna ({manufacturing_matched[0]}) w branży: {domain_matched[0]}"
+        else:
+            reason = f"dystrybucja/handel ({role_matched[0]}) w branży: {domain_matched[0]}"
         if place:
             reason += f"; {place}"
 
+        all_matched = domain_matched + role_matched + manufacturing_matched
         records.append(Record(
             title=name,
             url=uri,
@@ -126,8 +138,9 @@ def fetch() -> list:
             category="distributor",
             date_found=today,
             buyer=buyer_context,
-            keywords_matched=domain_matched + role_matched,
-            commodity_tier=classify_commodity_tier(domain_matched + role_matched),
+            keywords_matched=all_matched,
+            commodity_tier=classify_commodity_tier(all_matched),
+            activity_category=classify_activity_category(all_matched),
             reason=reason,
         ))
     return records

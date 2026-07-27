@@ -44,7 +44,10 @@ import requests
 from datetime import date
 from sources import Record
 from config import COMPANY_MATCH_TERMS
-from filters import match_company_purpose, match_distributor_role, classify_commodity_tier
+from filters import (
+    match_company_purpose, match_distributor_role, match_manufacturing,
+    classify_commodity_tier, classify_activity_category,
+)
 
 ENDPOINT = "https://lindas.admin.ch/query"
 TIMEOUT = 150  # the full-register regex scan is genuinely slow, see module docstring
@@ -135,18 +138,24 @@ def fetch() -> list:
         if not matched:
             continue  # re-confirm in Python; the SPARQL side uses the same term list but re-checking is cheap and safe
         role_matched = match_distributor_role(*entry["names"], description)
+        manufacturing_matched = match_manufacturing(*entry["names"], description)
 
         company_type = entry["company_type"]
         place = entry["place"]
         buyer_context = f"{company_type}, {place}".strip(", ") if (company_type or place) else None
 
-        if role_matched:
+        # Manufacturing-specific terms outrank the generic distributor-role label — see
+        # MANUFACTURING_TERMS docstring in config.py.
+        if manufacturing_matched:
+            reason = f"producent/obróbka mechaniczna ({manufacturing_matched[0]}) + {matched[0]}"
+        elif role_matched:
             reason = f"dystrybucja/handel ({role_matched[0]}) + {matched[0]}"
         else:
             reason = f"cel działalności zawiera: {matched[0]}"
         if place:
             reason += f"; {place}"
 
+        all_matched = matched + role_matched + manufacturing_matched
         records.append(Record(
             title=name,
             url=uri,
@@ -155,9 +164,10 @@ def fetch() -> list:
             category="company",
             date_found=today,
             buyer=buyer_context,
-            keywords_matched=matched + role_matched,
+            keywords_matched=all_matched,
             reason=reason,
-            commodity_tier=classify_commodity_tier(matched + role_matched),
+            commodity_tier=classify_commodity_tier(all_matched),
+            activity_category=classify_activity_category(all_matched),
         ))
     return records
 
