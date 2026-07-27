@@ -47,11 +47,13 @@ class CompanyClassification(BaseModel):
     one_line_summary: str = Field(description="Krótkie podsumowanie po polsku, czym firma faktycznie się zajmuje")
     product_tags: list[str] = Field(description="1-3 tagi z ustalonej listy, najbardziej trafne")
     business_model: str
-    relevance_to_switchgear: str = Field(
-        description="Czy firma plausibly dostarcza komponenty SN/WN (rozdzielnice, transformatory, "
-                     "wyłączniki) lub pokrewne branże (obróbka mechaniczna, maszyny przemysłowe)"
+    relevance: str = Field(
+        description="Czy firma zajmuje się handlem/dystrybucją komponentów mission-critical dla "
+                     "przemysłu (części zamienne, podzespoły, osprzęt elektrotechniczny/mechaniczny) "
+                     "LUB jest ich producentem — nie tylko wąsko rozdzielnice SN/WN, liczy się cały "
+                     "segment komponentów krytycznych dla ciągłości pracy maszyn/instalacji przemysłowych"
     )
-    relevance_reason: str = Field(description="1 zdanie uzasadnienia oceny relevance_to_switchgear")
+    relevance_reason: str = Field(description="1 zdanie uzasadnienia oceny relevance")
 
 
 CLASSIFICATION_SCHEMA = {
@@ -60,24 +62,33 @@ CLASSIFICATION_SCHEMA = {
         "one_line_summary": {"type": "string"},
         "product_tags": {"type": "array", "items": {"type": "string", "enum": PRODUCT_TAGS}},
         "business_model": {"type": "string", "enum": BUSINESS_MODELS},
-        "relevance_to_switchgear": {"type": "string", "enum": RELEVANCE_LEVELS},
+        "relevance": {"type": "string", "enum": RELEVANCE_LEVELS},
         "relevance_reason": {"type": "string"},
     },
-    "required": ["one_line_summary", "product_tags", "business_model", "relevance_to_switchgear", "relevance_reason"],
+    "required": ["one_line_summary", "product_tags", "business_model", "relevance", "relevance_reason"],
     "additionalProperties": False,
 }
 
 SYSTEM_PROMPT = """Jesteś analitykiem klasyfikującym szwajcarskie firmy dla jednoosobowego VAD \
-(Value-Added Distributor) w segmencie części zamiennych do rozdzielnic średniego i wysokiego \
-napięcia (GIS/MV-HV). Dostajesz nazwę firmy i pełny tekst celu działalności (Zweck der \
+(Value-Added Distributor) zajmującego się handlem i dystrybucją komponentów mission-critical dla \
+przemysłu — m.in. części zamienne do rozdzielnic średniego i wysokiego napięcia (GIS/MV-HV), ale \
+szerzej: podzespoły i osprzęt elektrotechniczny/mechaniczny krytyczne dla ciągłości pracy maszyn i \
+instalacji przemysłowych. Dostajesz nazwę firmy i pełny tekst celu działalności (Zweck der \
 Gesellschaft) z rejestru handlowego Zefix.
 
 Oceń, czym firma FAKTYCZNIE się zajmuje jako główną działalnością — nie tylko jakie pojedyncze \
-słowa pojawiają się w opisie. W szczególności: duży konglomerat wymieniający dziesiątki \
-niepowiązanych technologii w ramach ogólnikowego celu statutowego (typowe dla dużych spółek \
-akcyjnych) powinien dostać relevance_to_switchgear = "niska" lub "brak", nawet jeśli jedno z \
-wymienionych słów technicznie pasuje do naszej branży — chyba że ta konkretna technologia jest \
-wyraźnie centralnym, a nie pobocznym elementem opisu."""
+słowa pojawiają się w opisie. Pole `relevance` NIE pyta wąsko "czy produkuje rozdzielnice" — pyta, \
+czy firma jest producentem LUB dystrybutorem/handlowcem komponentów mission-critical dla przemysłu \
+(elektrotechnika, automatyka, napędy, hydraulika/pneumatyka, maszyny przemysłowe, obróbka \
+precyzyjna itp.), czyli czy jest potencjalnym dostawcą, konkurentem lub partnerem w łańcuchu dostaw \
+takich części.
+
+W szczególności: duży konglomerat wymieniający dziesiątki niepowiązanych technologii w ramach \
+ogólnikowego celu statutowego (typowe dla dużych spółek akcyjnych) powinien dostać relevance = \
+"niska" lub "brak", nawet jeśli jedno z wymienionych słów technicznie pasuje do naszej branży — \
+chyba że handel/produkcja komponentów mission-critical jest wyraźnie centralnym, a nie pobocznym \
+elementem opisu. Firma zajmująca się wyłącznie usługami nietechnicznymi (np. sprzątanie, \
+gastronomia, doradztwo ogólne) zawsze dostaje "brak"."""
 
 
 def _client() -> anthropic.Anthropic:

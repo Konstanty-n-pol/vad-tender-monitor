@@ -191,7 +191,7 @@ def set_llm_classification(table: str, dedup_key: str, classification) -> None:
                 classification.one_line_summary,
                 ",".join(classification.product_tags),
                 classification.business_model,
-                classification.relevance_to_switchgear,
+                classification.relevance,
                 classification.relevance_reason,
                 dedup_key,
             ),
