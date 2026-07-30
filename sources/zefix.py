@@ -29,8 +29,15 @@ Dataset notes (also verified live):
   of that, DISTRIBUTOR_ROLE_TERMS (config.py) is checked separately to *classify* the match in the
   digest reason as "dystrybucja/handel" vs a plain domain match — it never gates inclusion on its
   own, since role terms alone (Handel, distribution, ...) are far too generic.
-- Company names are matched in German, French or Italian (lang(?name) IN de/fr/it) — Suisse
-  Romande and Ticino companies were previously excluded entirely by a German-only name filter.
+- No FILTER on lang(?name): an earlier version restricted to lang(?name) IN de/fr/it (to fix an
+  even earlier German-only bug that excluded Suisse Romande/Ticino companies) but that itself
+  silently dropped every company whose ONLY schema:name literal has NO language tag at all —
+  confirmed live for real, active companies (e.g. "Exista AG", "BIBUS AG", "avintos AG",
+  "MTS Messtechnik Schaffhausen GmbH" all carry lang(?name) = "" and were being excluded
+  entirely, not just mislabeled, since schema:name is a required triple pattern here). Also seen:
+  legitimate hits tagged lang="en" (e.g. a German company's Swiss Zweigniederlassung). No lang
+  filter at all is correct; per-language duplicate name rows are already deduped client-side in
+  fetch() below.
 - Companies commonly have multiple schema:name literals (per-language trade names) and multiple
   schema:additionalType labels (per-language legal form) — the un-aggregated SELECT below returns
   the full cross product of all of those per company (confirmed live: one company showed up 8x).
@@ -59,7 +66,6 @@ SELECT ?company_uri ?name ?description ?company_type ?municipality ?street ?loca
   ?company_uri a admin:ZefixOrganisation ;
        schema:name ?name ;
        schema:description ?description .
-  FILTER(lang(?name) = "de" || lang(?name) = "fr" || lang(?name) = "it")
   FILTER regex(str(?description), "{pattern}", "i")
   OPTIONAL {{ ?company_uri admin:municipality ?muni_id . ?muni_id schema:name ?municipality . }}
   OPTIONAL {{

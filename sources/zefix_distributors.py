@@ -34,7 +34,6 @@ SELECT ?company_uri ?name ?description ?company_type ?municipality ?street ?loca
   ?company_uri a admin:ZefixOrganisation ;
        schema:name ?name ;
        schema:description ?description .
-  FILTER(lang(?name) = "de" || lang(?name) = "fr" || lang(?name) = "it")
   FILTER regex(str(?description), "{domain_pattern}", "i")
   FILTER regex(str(?description), "{role_pattern}", "i")
   OPTIONAL {{ ?company_uri admin:municipality ?muni_id . ?muni_id schema:name ?municipality . }}
