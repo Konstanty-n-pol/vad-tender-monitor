@@ -4,6 +4,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 import storage
+from filters import classify_activity_category_display
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 OUTPUT_DIR = Path(__file__).parent / "docs"  # GitHub Pages serves from /docs on main branch
@@ -35,6 +36,9 @@ def render_dashboard() -> str:
     records = storage.all_records()
     for r in records:
         r["days_since"] = _days_since(r["date_first_seen"])
+        r["activity_category"] = classify_activity_category_display(
+            r["keywords_matched"], r["llm_product_tags"], r["activity_category"]
+        )
     sources = sorted({r["source"] for r in records})
     categories = sorted({r["activity_category"] for r in records if r["activity_category"]})
     return tpl.render(run_date=date.today().isoformat(), records=records, sources=sources, categories=categories)
@@ -59,6 +63,10 @@ def render_distributors_email(new_records: list, dashboard_url: str) -> str:
 def render_distributors_dashboard() -> str:
     tpl = env.get_template("distributors_dashboard.html.j2")
     records = storage.all_distributor_records()
+    for r in records:
+        r["activity_category"] = classify_activity_category_display(
+            r["keywords_matched"], r["llm_product_tags"], r["activity_category"]
+        )
     categories = sorted({r["activity_category"] for r in records if r["activity_category"]})
     return tpl.render(run_date=date.today().isoformat(), records=records, categories=categories)
 

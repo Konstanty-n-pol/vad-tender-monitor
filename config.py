@@ -259,6 +259,42 @@ ACTIVITY_CATEGORY_PRIORITY = [
     "Elektrotechnika / energetyka ogólna",
 ]
 
+# Display-time category override (see filters.classify_activity_category_display, used by
+# generate.py): once a company has an LLM classification (llm_classify.py product_tags), that's
+# a far richer/more accurate signal than the keyword-derived ACTIVITY_CATEGORY_MAP above — e.g.
+# it split what used to be one "Elektrotechnika / energetyka ogólna" bucket covering 57% of the
+# main digest into real categories (confirmed live 2026-07-30: 38/67 -> 12/67 in that fallback
+# bucket, 343/363 -> 125/363 for the distributor report). Maps llm_classify.PRODUCT_TAGS values
+# to the SAME category label already used above where the concept is identical (e.g. "rozdzielnice
+# SN/WN" -> "Rozdzielnice / Switchgear"), so the two systems don't produce parallel/duplicate
+# category names on the dashboard. Order is priority (most specific first), same spirit as
+# ACTIVITY_CATEGORY_PRIORITY -- picks the first matching tag if a company has several.
+LLM_TAG_TO_ACTIVITY_CATEGORY = {
+    "rozdzielnice SN/WN": "Rozdzielnice / Switchgear",
+    "transformatory": "Transformatory",
+    "wyłączniki/rozłączniki": "Wyłączniki / rozłączniki",
+    "obróbka mechaniczna/CNC": "Obróbka mechaniczna / produkcja precyzyjna",
+    "odlewy/odlewnictwo": "Odlewy / komponenty",
+    "łożyska": "Łożyska",
+    "hydraulika/pneumatyka": "Hydraulika / pneumatyka",
+    "uszczelnienia": "Uszczelnienia",
+    "kable/przewody": "Kable / przewody",
+    "elektronika/automatyka": "Elektronika / automatyka",
+    "dystrybucja komponentów elektrycznych": "Dystrybucja komponentów elektrycznych",
+    "wyposażenie morskie": "Wyposażenie morskie / stoczniowe",
+    "inżynieria/projektowanie": "Inżynieria / projektowanie",
+    "maszyny przemysłowe (ogólne)": "Maszyny przemysłowe",
+    # "inne" deliberately unmapped -- falls through to the keyword-derived category below
+}
+LLM_TAG_PRIORITY = list(LLM_TAG_TO_ACTIVITY_CATEGORY.keys())
+
+# One keyword-only split kept as a fallback for companies without an LLM classification yet
+# (e.g. brand new finds from this week's fetch, before the next classification batch runs):
+# "energieversorgung"-matched companies are literally power utilities/cooperatives, not
+# switchgear-parts companies, and were previously lumped into the generic fallback category.
+ENERGY_UTILITY_KEYWORD = "energieversorgung"
+ENERGY_UTILITY_CATEGORY = "Zakład energetyczny / dostawca energii"
+
 # Countries in scope
 COUNTRIES = ["DE", "CH", "PL"]
 

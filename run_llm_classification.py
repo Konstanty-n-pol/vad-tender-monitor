@@ -1,9 +1,11 @@
-"""One-off batch run: LLM-classify every company currently in the database.
+"""One-off batch run: LLM-classify companies in the database that don't have a classification
+yet (llm_summary IS NULL). Safe to re-run after a fresh fetch adds new companies — already-
+classified ones are skipped so re-running never re-spends on the same company twice. Pass
+--all to force re-classifying everyone regardless of existing data.
 
-Not part of the automated weekly pipeline (main.py) — run manually whenever you want to
-(re-)classify the current company list, e.g. after a fresh fetch adds new companies:
+Not part of the automated weekly pipeline (main.py) — run manually:
 
-    python run_llm_classification.py
+    python run_llm_classification.py [--all]
 
 Fetches full purpose descriptions from LINDAS via a single VALUES-clause lookup by known
 company URI (fast — bounded to ~190 subjects, unlike the full-corpus regex scans in
@@ -11,6 +13,8 @@ sources/zefix*.py), then classifies them all in one Message Batches run
 (llm_classify.classify_companies_batch — 50% cheaper than sync calls), and writes results back
 to both `records` and `distributor_records` via storage.set_llm_classification().
 """
+import sys
+
 import requests
 
 import storage
@@ -50,8 +54,15 @@ def fetch_descriptions(uris: list) -> dict:
 
 
 def main():
+    force_all = "--all" in sys.argv
     main_companies = [r for r in storage.all_records() if r["category"] == "company"]
     distributor_companies = storage.all_distributor_records()
+    if not force_all:
+        skipped_main = sum(1 for r in main_companies if r["llm_summary"])
+        skipped_dist = sum(1 for r in distributor_companies if r["llm_summary"])
+        main_companies = [r for r in main_companies if not r["llm_summary"]]
+        distributor_companies = [r for r in distributor_companies if not r["llm_summary"]]
+        print(f"[run_llm] skipping {skipped_main + skipped_dist} already-classified compan(y/ies)")
     print(f"[run_llm] {len(main_companies)} main-digest companies, {len(distributor_companies)} distributor-report companies")
 
     all_uris = list({r["url"] for r in main_companies + distributor_companies if r["url"]})

@@ -11,7 +11,8 @@ word form glues to which in a phrase.
 from config import (
     ALL_KEYWORDS, BRANCH_HINTS, COMPANY_MATCH_TERMS, DISTRIBUTOR_ROLE_TERMS, INDUSTRIAL_DOMAIN_TERMS,
     COMMODITY_TIER_1_TERMS, COMMODITY_TIER_2_TERMS, ACTIVITY_CATEGORY_MAP, ACTIVITY_CATEGORY_PRIORITY,
-    MANUFACTURING_TERMS,
+    MANUFACTURING_TERMS, LLM_TAG_TO_ACTIVITY_CATEGORY, LLM_TAG_PRIORITY, ENERGY_UTILITY_KEYWORD,
+    ENERGY_UTILITY_CATEGORY,
 )
 
 
@@ -93,6 +94,29 @@ def classify_activity_category(matched_keywords: list) -> str:
         if category in present:
             return category
     return ""
+
+
+def classify_activity_category_display(keywords_matched: str, llm_product_tags, stored_category: str) -> str:
+    """Render-time override of the stored (keyword-derived) activity_category, called from
+    generate.py — never written back to storage, so it automatically improves as more companies
+    get an LLM classification without needing a backfill migration each time.
+
+    Prefers llm_classify.py's product_tags (semantically grounded, reads the actual purpose
+    text) over the keyword-derived category, since the latter collapses most companies into one
+    or two generic buckets (see LLM_TAG_TO_ACTIVITY_CATEGORY docstring in config.py for the
+    confirmed before/after counts). Falls back to the keyword category for companies not yet
+    LLM-classified, with one extra split (energy utilities) that a bare keyword match can
+    already do accurately without needing the LLM at all.
+    """
+    if llm_product_tags:
+        tags = {t.strip() for t in llm_product_tags.split(",") if t.strip()}
+        for tag in LLM_TAG_PRIORITY:
+            if tag in tags:
+                return LLM_TAG_TO_ACTIVITY_CATEGORY[tag]
+    kws = {k.strip() for k in (keywords_matched or "").split(",")}
+    if ENERGY_UTILITY_KEYWORD in kws and stored_category in ("Elektrotechnika / energetyka ogólna", ""):
+        return ENERGY_UTILITY_CATEGORY
+    return stored_category
 
 
 def is_relevant_tender(*texts: str) -> tuple:
