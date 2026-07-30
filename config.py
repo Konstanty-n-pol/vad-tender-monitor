@@ -95,6 +95,17 @@ DISTRIBUTOR_ROLE_TERMS = [
 # Confirmed live: role-terms alone match ~29,900 CH companies (unusable); role+this list
 # narrows it to ~156 (2026-07-25) — a reviewable weekly size. Kept as its own list/report rather
 # than folded into COMPANY_MATCH_TERMS so the original curated GIS/MV-HV digest stays untouched.
+#
+# TRIED AND REVERTED 2026-07-30: to catch Omni Ray SA ("Handel mit Bedarfsartikeln der Elektro-,
+# Elektronik- und Computerindustrie ... sowie Übernahme von Vertretungen"), tried adding
+# "vertretung" to DISTRIBUTOR_ROLE_TERMS and an "elektroindustrie"/"elektronikindustrie"/
+# "computerindustrie"/etc. section here. Confirmed live that EITHER change alone (let alone both
+# together) blows the report up from ~227 to ~1300 companies — "electrical/electronics/computer
+# industry" and "Vertretung" both turn out to be extremely common phrasing in ordinary Swiss
+# company purposes generally, unlike the machinery/marine wording below. Reverted rather than
+# shipped unreviewed; catching Omni-Ray-like companies needs either a much more specific phrase
+# (e.g. matching Omni Ray's actual multi-clause wording, not the bare sector name) or a manual
+# add, not a broadened term list. See conversation 2026-07-30 for the full before/after counts.
 INDUSTRIAL_DOMAIN_TERMS = [
     # Industrial machinery / equipment
     "maschinenbau", "industriemaschinen", "industrieanlagen", "anlagenbau", "industrieausrüstung",

@@ -13,6 +13,15 @@ at ~156 companies, a genuinely reviewable weekly size. Kept as a fully separate 
 SQLite table via storage.upsert_distributor_records/all_distributor_records, own dashboard page,
 own short email) rather than folded into the curated GIS/MV-HV digest in sources/zefix.py, so
 that digest's precision/size stays untouched.
+
+LIMIT raised 500 -> 3000 on 2026-07-30: after broadening INDUSTRIAL_DOMAIN_TERMS/
+DISTRIBUTOR_ROLE_TERMS to catch Omni Ray SA and similar electrical/electronics/computer-industry
+distributors (see config.py comment), the query started returning exactly 500 raw rows (the old
+LIMIT) with no ORDER BY — confirmed via a direct check that this was silent truncation, not the
+true result size, and that it was arbitrarily dropping some previously-included companies while
+picking up new ones (total distinct companies looked like it *dropped* after broadening the
+match criteria, which is only possible under truncation). 3000 gives comfortable headroom above
+the ~2.25 raw-rows-per-company ratio observed at the time.
 """
 import re
 import requests
@@ -47,7 +56,7 @@ SELECT ?company_uri ?name ?description ?company_type ?municipality ?street ?loca
     ?adr schema:streetAddress ?street ; schema:addressLocality ?locality .
   }}
 }}
-LIMIT 500
+LIMIT 3000
 """
 
 
