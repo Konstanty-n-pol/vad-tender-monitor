@@ -59,20 +59,39 @@ BRANCH_HINTS = [
 # noisy for this specific use case (confirmed by testing: "ersatzteil" and "casting" pulled in
 # travel agencies, film production companies, generic trading firms). This list sticks to terms
 # specific enough to the GIS/MV-HV switchgear domain that they're unlikely to be generic boilerplate.
-COMPANY_MATCH_TERMS = [
-    "mittelspannung", "hochspannung", "schaltanlage", "umspannwerk", "trafostation",
-    "schaltschrank", "leistungsschalter", "trennschalter", "schaltfeld", "gussteil",
-    "sf6", "transformator", "switchgear", "disconnector", "circuit breaker",
-    "medium voltage", "high voltage", "substation",
-    "elektrotechnik", "energieversorgung", "schaltanlagenbau",
-    ("dystrybucj", "energi"), "energetyk", "electrical engineering",
-    "power distribution", "switchgear manufactur",
-    # French/Italian variants — Zefix purpose text isn't only German, and until now we only
-    # matched companies with a German-tagged name (excluding Suisse Romande/Ticino entirely).
-    "haute tension", "moyenne tension", "poste électrique", "sous-station",
-    "disjoncteur", "sectionneur",
-    "alta tensione", "media tensione", "sottostazione", "interruttore",
-]
+# Split into groups on 2026-08-02 so sources/zefix.py can query each group as its own smaller
+# SPARQL request instead of one combined ~500-char/35-term regex — see that module's docstring
+# for why: the LINDAS/Virtuoso endpoint gives non-deterministic, incomplete results once a
+# regex-scan query gets expensive enough (confirmed live: identical query, two runs, 248 vs.
+# 1371 companies, a known-good match missing from both). Groups mirror ACTIVITY_CATEGORY_MAP's
+# categories so no new taxonomy was invented. "gussteil" (Odlewy/komponenty) dropped entirely
+# per user decision 2026-08-02 — doesn't fit the current mission-critical-components product
+# categories (see memory: user-role-vad-business).
+COMPANY_MATCH_TERM_GROUPS = {
+    "Rozdzielnice / Switchgear": [
+        "schaltanlage", "switchgear", "switchgear manufactur", "schaltschrank", "schaltfeld",
+        "schaltanlagenbau", "poste électrique", "sous-station", "sottostazione", "substation",
+        "umspannwerk", "trafostation", "sf6",
+    ],
+    "SN/WN ogólne": [
+        "mittelspannung", "hochspannung", "moyenne tension", "haute tension", "alta tensione",
+        "media tensione", "medium voltage", "high voltage",
+    ],
+    "Wyłączniki / rozłączniki": [
+        "leistungsschalter", "circuit breaker", "trennschalter", "disconnector", "disjoncteur",
+        "sectionneur", "interruttore",
+    ],
+    "Elektrotechnika / energetyka ogólna": [
+        "elektrotechnik", "energieversorgung", "energetyk", "electrical engineering",
+        "power distribution", ("dystrybucj", "energi"),
+    ],
+    "Transformatory": ["transformator"],
+}
+
+# Flat union of the groups above, kept for Python-side re-confirmation (filters.py's
+# match_company_purpose) — same term set as before the SPARQL side was split into per-group
+# queries, just restructured.
+COMPANY_MATCH_TERMS = [t for terms in COMPANY_MATCH_TERM_GROUPS.values() for t in terms]
 
 # Terms indicating a distribution / brokerage / reselling business model rather than
 # manufacturing. On their own these are far too generic to filter on (a large share of all

@@ -45,12 +45,42 @@ Dataset notes (also verified live):
   (aggregation forces the server to compute the whole grouped result before it can stream
   anything back, unlike a plain SELECT+LIMIT which streams incrementally) — reverted. Instead we
   dedup client-side in fetch() by company_uri, merging keywords across the duplicate rows.
+- IMPORTANT, discovered 2026-07-30: this query's results are a non-deterministic PARTIAL sample
+  of matching companies, not an exhaustive scan, once the combined regex pattern gets expensive
+  enough (it's ~500 chars / 100+ alternatives here). Raised LIMIT 400 -> 3000 after finding "GE
+  Vernova (Switzerland) GmbH" (purpose text literally names "Schaltanlagen", an unambiguous
+  match) completely absent from results — but the LIMIT wasn't the (whole) story: two back-to-
+  back runs of the *identical* query, LIMIT 3000, no ORDER BY, returned 248 and then 1371
+  distinct companies, and GE Vernova was missing from BOTH. Isolating the same regex pattern to
+  just that one company_uri via a FILTER matches it correctly every time — so the pattern itself
+  is fine; the LINDAS/Virtuoso endpoint is doing some form of early-stopping/best-effort
+  evaluation on the full unordered scan under this query's cost, and which subset of the register
+  it manages to evaluate before giving up varies per run. Tried adding ORDER BY ?company_uri to
+  force deterministic full evaluation (same idea as `sort | uniq`) — that made the query time out
+  entirely (504 after 180s), so ordering is not viable here, matching the earlier GROUP BY
+  finding in this same docstring history.
+  Practical consequence: no single run of fetch() should be treated as a complete list of
+  matching CH companies — treat it as a large, changing sample. The weekly job's persistence
+  (storage.py upserts rather than replaces) partially compensates over successive runs, but a
+  one-off "how many companies match X" question needs multiple repeated runs merged together to
+  approach completeness, and even then completeness isn't guaranteed. This also means every
+  "confirmed live: N companies" figure recorded elsewhere in this project's history (config.py,
+  session notes) was itself such a sample, not a ground-truth count.
+- FIX applied 2026-08-02: split COMPANY_MATCH_TERM_GROUPS (config.py) into 5 smaller queries
+  (one per category) run sequentially, results merged/deduped by company_uri, instead of one
+  ~500-char/35-term combined regex. Each group's pattern is far shorter, which should make the
+  per-query cost (and therefore the non-determinism above) much less likely to bite — verified
+  live by running fetch() twice in a row and confirming both the company count and the presence
+  of "GE Vernova (Switzerland) GmbH" were stable across both runs. This does NOT prove the
+  endpoint is now deterministic in general, just that it held up for this term set at this size
+  — re-verify (run fetch() twice, diff the results) if COMPANY_MATCH_TERM_GROUPS grows
+  significantly.
 """
 import re
 import requests
 from datetime import date
 from sources import Record
-from config import COMPANY_MATCH_TERMS
+from config import COMPANY_MATCH_TERM_GROUPS
 from filters import (
     match_company_purpose, match_distributor_role, match_manufacturing,
     classify_commodity_tier, classify_activity_category,
@@ -78,7 +108,7 @@ SELECT ?company_uri ?name ?description ?company_type ?municipality ?street ?loca
     ?adr schema:streetAddress ?street ; schema:addressLocality ?locality .
   }}
 }}
-LIMIT 400
+LIMIT 3000
 """
 
 
@@ -88,16 +118,17 @@ def _sparql_regex_escape(term: str) -> str:
     return re.sub(r"([.^$*+?()\[\]{}|\\])", r"\\\1", term)
 
 
-def _build_pattern() -> str:
-    terms = set()
-    for kw in COMPANY_MATCH_TERMS:
-        terms.update(kw) if isinstance(kw, tuple) else terms.add(kw)
-    return "|".join(_sparql_regex_escape(t) for t in sorted(terms))
+def _build_pattern(terms) -> str:
+    flat = set()
+    for kw in terms:
+        flat.update(kw) if isinstance(kw, tuple) else flat.add(kw)
+    return "|".join(_sparql_regex_escape(t) for t in sorted(flat))
 
 
-def fetch() -> list:
-    records = []
-    query = _QUERY_TEMPLATE.format(pattern=_build_pattern())
+def _fetch_group(group_name: str, terms: list) -> list:
+    """Run one SPARQL query scoped to a single term group. Returns raw bindings, or [] on
+    failure (a failed group shouldn't take down the whole fetch)."""
+    query = _QUERY_TEMPLATE.format(pattern=_build_pattern(terms))
     try:
         resp = requests.post(
             ENDPOINT,
@@ -109,32 +140,40 @@ def fetch() -> list:
             timeout=TIMEOUT,
         )
         resp.raise_for_status()
-        data = resp.json()
+        bindings = resp.json().get("results", {}).get("bindings", [])
     except requests.RequestException as e:
-        print(f"[zefix] SPARQL query failed: {e}")
-        return records
+        print(f"[zefix] group '{group_name}' SPARQL query failed: {e}")
+        return []
+    print(f"[zefix] group '{group_name}': {len(bindings)} raw row(s)")
+    return bindings
 
-    # Dedup by company_uri first: the query returns one row per (name-language x legal-form-
-    # language) combination for the same company, see module docstring. Merge all variants'
-    # name/description text before matching so we don't lose a keyword that only shows up in
-    # e.g. the French name/description while keeping the first non-empty context fields.
+
+def fetch() -> list:
+    records = []
+
+    # Dedup by company_uri across ALL groups: the query returns one row per (name-language x
+    # legal-form-language) combination for the same company, see module docstring, and a company
+    # can legitimately match more than one group. Merge all variants' name/description text so
+    # we don't lose a keyword that only shows up in e.g. the French name/description.
     by_company = {}
-    for b in data.get("results", {}).get("bindings", []):
-        uri = b.get("company_uri", {}).get("value", "")
-        name = b.get("name", {}).get("value", "")
-        if not uri or not name:
-            continue
-        entry = by_company.setdefault(uri, {
-            "names": [], "descriptions": set(), "company_type": "", "place": "",
-        })
-        entry["names"].append(name)
-        desc = b.get("description", {}).get("value", "")
-        if desc:
-            entry["descriptions"].add(desc)
-        if not entry["company_type"]:
-            entry["company_type"] = b.get("company_type", {}).get("value", "")
-        if not entry["place"]:
-            entry["place"] = b.get("municipality", {}).get("value", "") or b.get("locality", {}).get("value", "")
+    for group_name, terms in COMPANY_MATCH_TERM_GROUPS.items():
+        print(f"[zefix] querying group '{group_name}' ({len(terms)} term(s))...")
+        for b in _fetch_group(group_name, terms):
+            uri = b.get("company_uri", {}).get("value", "")
+            name = b.get("name", {}).get("value", "")
+            if not uri or not name:
+                continue
+            entry = by_company.setdefault(uri, {
+                "names": [], "descriptions": set(), "company_type": "", "place": "",
+            })
+            entry["names"].append(name)
+            desc = b.get("description", {}).get("value", "")
+            if desc:
+                entry["descriptions"].add(desc)
+            if not entry["company_type"]:
+                entry["company_type"] = b.get("company_type", {}).get("value", "")
+            if not entry["place"]:
+                entry["place"] = b.get("municipality", {}).get("value", "") or b.get("locality", {}).get("value", "")
 
     today = date.today().isoformat()
     for uri, entry in by_company.items():
