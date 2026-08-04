@@ -88,7 +88,16 @@ ogólnikowego celu statutowego (typowe dla dużych spółek akcyjnych) powinien 
 "niska" lub "brak", nawet jeśli jedno z wymienionych słów technicznie pasuje do naszej branży — \
 chyba że handel/produkcja komponentów mission-critical jest wyraźnie centralnym, a nie pobocznym \
 elementem opisu. Firma zajmująca się wyłącznie usługami nietechnicznymi (np. sprzątanie, \
-gastronomia, doradztwo ogólne) zawsze dostaje "brak"."""
+gastronomia, doradztwo ogólne) zawsze dostaje "brak".
+
+Oprócz tekstu celu działalności z rejestru handlowego możesz też dostać wyciąg z oficjalnej \
+strony internetowej firmy. Tekst rejestrowy bywa ogólnikową formułką prawną (typowe dla dużych \
+spółek — długa lista technologii, z których tylko jedna jest faktyczną specjalizacją); strona \
+internetowa zwykle pokazuje, czym firma NAPRAWDĘ się zajmuje i co sama uważa za swoją \
+specjalizację. Gdy oba źródła są dostępne i się różnią, ufaj bardziej treści ze strony \
+internetowej co do REALNEGO fokusu biznesowego, ale użyj tekstu rejestrowego do potwierdzenia \
+formy prawnej/zakresu uprawnień. Jeśli strona nie jest dostępna lub jest pusta, oceniaj \
+wyłącznie na podstawie tekstu rejestrowego jak dotychczas."""
 
 
 def _client() -> anthropic.Anthropic:
@@ -98,12 +107,19 @@ def _client() -> anthropic.Anthropic:
     return anthropic.Anthropic(api_key=api_key)
 
 
-def _build_prompt(name: str, description: str) -> str:
-    return f"Firma: {name}\n\nCel działalności (z rejestru): {description}"
+def _build_prompt(name: str, description: str, website_content: str = "", website_url: str = "") -> str:
+    prompt = f"Firma: {name}\n\nCel działalności (z rejestru Zefix): {description}"
+    if website_content:
+        prompt += f"\n\nTreść ze strony internetowej firmy ({website_url}):\n{website_content}"
+    return prompt
 
 
-def classify_company(name: str, description: str, model: str = DEFAULT_MODEL) -> CompanyClassification:
-    """Single synchronous call — for quick tests, not for bulk runs (use classify_companies_batch)."""
+def classify_company(
+    name: str, description: str, model: str = DEFAULT_MODEL,
+    website_content: str = "", website_url: str = "",
+) -> CompanyClassification:
+    """Single synchronous call — for quick tests, not for bulk runs (use classify_companies_batch).
+    website_content is optional (see SYSTEM_PROMPT for how it's weighted against the registry text)."""
     client = _client()
     response = client.messages.create(
         model=model,
@@ -112,7 +128,7 @@ def classify_company(name: str, description: str, model: str = DEFAULT_MODEL) ->
         # the JSON mid-string. 2048 leaves headroom for both at effort=medium.
         max_tokens=2048,
         system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": _build_prompt(name, description)}],
+        messages=[{"role": "user", "content": _build_prompt(name, description, website_content, website_url)}],
         output_config={"effort": "medium", "format": {"type": "json_schema", "schema": CLASSIFICATION_SCHEMA}},
     )
     text = next(b.text for b in response.content if b.type == "text")
