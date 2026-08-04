@@ -67,11 +67,18 @@ BRANCH_HINTS = [
 # categories so no new taxonomy was invented. "gussteil" (Odlewy/komponenty) dropped entirely
 # per user decision 2026-08-02 — doesn't fit the current mission-critical-components product
 # categories (see memory: user-role-vad-business).
+#
+# "schaltschränk" added 2026-08-04: found live that "All4SPS AG" (Fertigung von
+# *Schaltschränken*) was missing despite "schaltschrank" being in this list — German umlaut
+# plural mutation (Schrank -> Schränke) changes the stem vowel itself (a -> ä), so it's not
+# caught by simple suffix/substring matching the way regular inflection is (see filters.py
+# module docstring on why substring matching was chosen generally). Worth checking other
+# strong-umlaut German nouns in these lists if more gaps like this turn up.
 COMPANY_MATCH_TERM_GROUPS = {
     "Rozdzielnice / Switchgear": [
-        "schaltanlage", "switchgear", "switchgear manufactur", "schaltschrank", "schaltfeld",
-        "schaltanlagenbau", "poste électrique", "sous-station", "sottostazione", "substation",
-        "umspannwerk", "trafostation", "sf6",
+        "schaltanlage", "switchgear", "switchgear manufactur", "schaltschrank", "schaltschränk",
+        "schaltfeld", "schaltanlagenbau", "poste électrique", "sous-station", "sottostazione",
+        "substation", "umspannwerk", "trafostation", "sf6",
     ],
     "SN/WN ogólne": [
         "mittelspannung", "hochspannung", "moyenne tension", "haute tension", "alta tensione",
