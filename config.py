@@ -74,9 +74,18 @@ BRANCH_HINTS = [
 # caught by simple suffix/substring matching the way regular inflection is (see filters.py
 # module docstring on why substring matching was chosen generally). Worth checking other
 # strong-umlaut German nouns in these lists if more gaps like this turn up.
+#
+# "sekundärtechnik"/"schutztechnik"/"leittechnik" added same day, inspired by Solutec
+# automation AG's specialty (protection/control engineering for HV/MV switchgear "secondary
+# technique") — confirmed live, all safely low-count (well under the 3000 cap). English/French
+# equivalents ("protection and control", "contrôle-commande", "control technology", "protective
+# relaying") were tested too but matched ~0 in both name and description — Zefix purpose text is
+# essentially never in English, and these particular French phrasings didn't hit anything real —
+# so they were deliberately left out rather than added for no recall.
 COMPANY_MATCH_TERM_GROUPS = {
     "Rozdzielnice / Switchgear": [
         "schaltanlage", "switchgear", "switchgear manufactur", "schaltschrank", "schaltschränk",
+        "sekundärtechnik", "schutztechnik", "leittechnik",
         "schaltfeld", "schaltanlagenbau", "poste électrique", "sous-station", "sottostazione",
         "substation", "umspannwerk", "trafostation", "sf6",
     ],
