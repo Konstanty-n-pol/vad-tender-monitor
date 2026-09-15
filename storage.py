@@ -42,6 +42,22 @@ CREATE TABLE IF NOT EXISTS distributor_records (
 );
 """
 
+# Known business relationships between companies (e.g. "X is a client of Aman Engineering"),
+# reported by the user — distinct from `reason`/LLM fields, which only ever describe one company
+# in isolation. Rendered onto the dashboard at render time (see generate.py), never persisted
+# into `reason` itself, so the keyword-matching explanation in `reason` stays clean and
+# machine-generated. company_title matches records.title / distributor_records.title.
+RELATIONSHIPS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS relationships (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_title TEXT NOT NULL,
+    relation_type TEXT NOT NULL,
+    related_company TEXT NOT NULL,
+    note TEXT,
+    date_added TEXT NOT NULL
+);
+"""
+
 # Columns added after the initial schema — applied via ALTER TABLE for existing databases.
 # `website` is never written by the automated fetch (Zefix/LINDAS has no such field); it's only
 # ever set by a one-off manual enrichment pass (see enrich_websites.py) and preserved across
@@ -74,6 +90,7 @@ def connect():
     conn = sqlite3.connect(DB_PATH)
     conn.execute(SCHEMA)
     conn.execute(DISTRIBUTOR_SCHEMA)
+    conn.execute(RELATIONSHIPS_SCHEMA)
     for table, column, coltype in _MIGRATIONS:
         try:
             conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {coltype}")
@@ -177,6 +194,37 @@ def set_website(table: str, dedup_key: str, website: str):
     assert table in ("records", "distributor_records")
     with connect() as conn:
         conn.execute(f"UPDATE {table} SET website = ? WHERE dedup_key = ?", (website, dedup_key))
+
+
+def add_relationship(company_title: str, relation_type: str, related_company: str, note: str = "") -> None:
+    """Record a known business relationship (e.g. relation_type='client_of', related_company=
+    'Aman Engineering Equipment LLC'). One call replaces the old manual-SQL + memory-file
+    workflow; get_relationships() feeds it back into the dashboard at render time."""
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO relationships (company_title, relation_type, related_company, note, date_added) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (company_title, relation_type, related_company, note, date.today().isoformat()),
+        )
+
+
+def get_relationships(company_title: str) -> list:
+    with connect() as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT relation_type, related_company, note, date_added FROM relationships "
+            "WHERE company_title = ? ORDER BY date_added", (company_title,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def all_relationships() -> list:
+    with connect() as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT company_title, relation_type, related_company, note, date_added FROM relationships"
+        ).fetchall()
+        return [dict(r) for r in rows]
 
 
 def set_llm_classification(table: str, dedup_key: str, classification) -> None:
