@@ -43,6 +43,57 @@ KEYWORDS_EN = [
 
 ALL_KEYWORDS = KEYWORDS_DE + KEYWORDS_PL + KEYWORDS_EN
 
+# --- Starlink accessories group (added 2026-11-26) ---------------------------------------------
+# Separate from ALL_KEYWORDS on purpose: these must NOT leak into the switchgear matching used by
+# simap/zefix. Only sources listed in STARLINK_SOURCES use this group.
+# Two lists because search APIs and our own matching need different things:
+#  - KEYWORDS_STARLINK: stems for filters.match_keywords (substring, lowercase). "starlink"
+#    already covers every Latin-script phrase ("кабель starlink", "Satellitenkommunikation
+#    Starlink", "łączność satelitarna Starlink", ...), so those aren't repeated as stems.
+#  - STARLINK_SEARCH_PHRASES_*: full phrases sent to each source's own full-text search.
+KEYWORDS_STARLINK = [
+    "starlink", "starshield",
+    "старлінк", "старлинк",                 # UA / RU transliteration
+    ("супутников", "термінал"),             # UA: супутниковий термінал / супутникових терміналів
+    ("спутников", "терминал"),              # RU: спутниковый терминал
+    ("łączność satelitarn", "starlink"),    # PL (subsumed by "starlink", kept for readable labels)
+    ("satellitenkommunikation", "starlink"),  # DE (idem)
+]
+
+# TED full-text search (FT ~ "..."). Latin-script only — TED notices are in EU languages.
+STARLINK_SEARCH_PHRASES_TED = [
+    "Starlink", "Starshield",
+    "Satellitenkommunikation Starlink", "łączność satelitarna Starlink",
+]
+# TED countries for the starlink group: NO DEU/POL restriction (most Starlink tenders on TED are
+# in ROU, CZE, PRT, NOR, GRC, FRA). None = all buyer countries.
+STARLINK_TED_COUNTRIES = None
+
+# Prozorro full-text search phrases (UA/RU/EN). Each phrase is paginated separately and merged
+# by tenderID. "starlink" alone hits ~1000 notices (2022–2026), so the date window below matters.
+STARLINK_SEARCH_PHRASES_PROZORRO = [
+    "starlink", "старлінк", "старлинк", "кабель starlink", "супутниковий термінал", "starshield",
+]
+PROZORRO_LOOKBACK_DAYS = 30   # keep notices whose tenderID date (UA-YYYY-MM-DD-...) is this recent
+PROZORRO_MAX_PAGES = 30       # per phrase, 20 results/page; must exceed total/20 — relevance
+                              # ordering shuffles between calls, so a truncated tail differs every run
+
+# Cables/accessories inside the starlink group — the actual VAD product focus. Not a filter: hits
+# just get a "🔌 akcesoria" prefix in `reason` so they stand out among plain terminal/modem buys.
+STARLINK_ACCESSORY_TERMS = [
+    "кабел", "подовжув", "перехідник", "адаптер", "конектор", "роз'єм", "роз’єм", "кріплен",
+    "щогл", "блок живлен", "кабель", "удлинит",
+    "cable", "extension", "adapter", "connector", "mount", "power supply",
+    "kabel", "przedłuż", "złącz", "verlängerung", "stecker", "halterung",
+]
+
+# Keyword groups -> which sources use them (see sources/ted.py, sources/prozorro.py)
+KEYWORD_GROUPS = {
+    "switchgear": ALL_KEYWORDS,
+    "starlink": KEYWORDS_STARLINK,
+}
+STARLINK_SOURCES = ["ted", "prozorro"]
+
 # PKD/NOGA/branch codes signalling relevant new companies (electrotechnical / energy distribution)
 # Used loosely as substring match against a company's purpose/branch text where available.
 BRANCH_HINTS = [
@@ -346,4 +397,5 @@ SOURCES_ENABLED = {
     "simap": True,
     "ted": True,
     "ezamowienia": False,  # enable once NoticeType enum values are confirmed from integration docs
+    "prozorro": True,      # UA public procurement — starlink keyword group only (2026-11-26)
 }

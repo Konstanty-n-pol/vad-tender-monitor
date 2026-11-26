@@ -10,6 +10,9 @@ TEMPLATES_DIR = Path(__file__).parent / "templates"
 OUTPUT_DIR = Path(__file__).parent / "docs"  # GitHub Pages serves from /docs on main branch
 
 env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
+# Display labels for the country column; anything not listed falls back to the ISO2 code
+# (TED's starlink group returns buyers from any EU/EEA country).
+env.globals["country_labels"] = {"DE": "NIEMCY", "CH": "SWITZERLAND", "PL": "POLSKA", "UA": "UKRAINA"}
 
 
 def _days_since(iso_date: str) -> int:
@@ -59,7 +62,9 @@ def render_dashboard() -> str:
     _apply_relationships(records)
     sources = sorted({r["source"] for r in records})
     categories = sorted({r["activity_category"] for r in records if r["activity_category"]})
-    return tpl.render(run_date=date.today().isoformat(), records=records, sources=sources, categories=categories)
+    countries = sorted({r["country"] for r in records if r["country"]})
+    return tpl.render(run_date=date.today().isoformat(), records=records, sources=sources,
+                      categories=categories, countries=countries)
 
 
 def write_dashboard():
