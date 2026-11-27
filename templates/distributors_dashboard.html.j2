@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VAD Monitor — Dystrybutorzy/Broker/Reseller (CH)</title>
@@ -23,28 +23,28 @@
 </head>
 <body>
 <header><div class="wrap">
-<h1>Dystrybutorzy / Broker / Reseller — przemysł techniczny, maszyny, wyposażenie statków (CH)</h1>
-<p>Ostatnia aktualizacja: {{ run_date }} · {{ records|length }} firm w archiwum · <a class="back" href="index.html" style="color:#c0c0d0;">← główny dashboard</a></p>
+<h1>Distributors / Brokers / Resellers — industrial technology, machinery, ship equipment (CH)</h1>
+<p>Last updated: {{ run_date }} · {{ records|length }} companies in archive · <a class="back" href="index.html" style="color:#c0c0d0;">← main dashboard</a></p>
 </div></header>
 
 <div class="wrap">
 <div class="controls">
-  <input id="q" type="text" placeholder="Szukaj słowa kluczowego...">
-  <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
-  <select id="activityCategory"><option value="">Wszystkie kategorie działalności</option>{% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
-  <label style="font-size:13px;"><input type="checkbox" id="onlyStarred"> tylko oznaczone ★</label>
+  <input id="q" type="text" placeholder="Search keyword...">
+  <select id="tier"><option value="">All tiers</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
+  <select id="activityCategory"><option value="">All activity categories</option>{% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
+  <label style="font-size:13px;"><input type="checkbox" id="onlyStarred"> starred only ★</label>
 </div>
 
 <table id="tbl">
 <thead><tr>
 <th>★</th>
-<th data-k="title">Firma</th>
+<th data-k="title">Company</th>
 <th>WWW</th>
-<th data-k="buyer">Forma prawna / miejscowość</th>
+<th data-k="buyer">Legal form / town</th>
 <th data-k="tier">Tier</th>
-<th data-k="activityCategory">Kategoria działalności</th>
-<th data-k="date_first_seen">Wykryto</th>
-<th>Uzasadnienie</th>
+<th data-k="activityCategory">Activity category</th>
+<th data-k="date_first_seen">First seen</th>
+<th>Why it matched</th>
 </tr></thead>
 <tbody>
 {% for r in records %}

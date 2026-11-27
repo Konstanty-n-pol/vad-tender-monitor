@@ -5,8 +5,9 @@ Env vars used: see mailer.py and sources/zefix.py docstrings.
 """
 import os
 from config import SOURCES_ENABLED, DISTRIBUTOR_REPORT_ENABLED
-from sources import zefix, simap, ted, ezamowienia, zefix_distributors
+from sources import zefix, simap, ted, ezamowienia, zefix_distributors, prozorro
 import storage
+import translate
 import generate
 import mailer
 
@@ -15,6 +16,7 @@ SOURCE_MODULES = {
     "simap": simap,
     "ted": ted,
     "ezamowienia": ezamowienia,
+    "prozorro": prozorro,
 }
 
 
@@ -35,14 +37,17 @@ def fetch_all() -> list:
 
 
 def dedup_across_sources(records: list) -> list:
-    """Same tender/company appearing under two sources -> keep first, drop rest (by title match)."""
-    seen_titles = set()
+    """Same tender/company appearing under two sources -> keep first, drop rest (by title match).
+    Only drops a title seen from a DIFFERENT source: within one source, identical generic titles
+    are distinct notices (e.g. many Prozorro "Супутниковий модем Starlink Mini" from different
+    units, or repeated TED call-offs) and are already deduped by URL in storage."""
+    seen_titles = {}  # title -> source that first produced it
     deduped = []
     for r in records:
         key = r.title.strip().lower()
-        if key in seen_titles:
+        if key in seen_titles and seen_titles[key] != r.source:
             continue
-        seen_titles.add(key)
+        seen_titles.setdefault(key, r.source)
         deduped.append(r)
     return deduped
 
@@ -75,6 +80,11 @@ def main():
 
     new_records = storage.upsert_records(all_records)
     print(f"[main] {len(new_records)} brand-new record(s) this run")
+
+    translate.translate_pending()
+    en = storage.titles_en([r.dedup_key() for r in new_records])
+    for r in new_records:
+        r.title_en = en.get(r.dedup_key())
 
     generate.write_dashboard()
 

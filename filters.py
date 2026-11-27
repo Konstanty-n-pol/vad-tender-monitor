@@ -26,10 +26,12 @@ def _label(keyword) -> str:
     return " ".join(keyword) if isinstance(keyword, tuple) else keyword
 
 
-def match_keywords(*texts: str) -> list:
-    """Return the configured keywords/phrases found (case-insensitive stem match) in the given text(s)."""
+def match_keywords(*texts: str, keywords=None) -> list:
+    """Return the configured keywords/phrases found (case-insensitive stem match) in the given text(s).
+    `keywords` defaults to ALL_KEYWORDS (switchgear group); pass a config.KEYWORD_GROUPS entry
+    (e.g. KEYWORDS_STARLINK) to match another group."""
     haystack = " ".join(t for t in texts if t).lower()
-    return [_label(kw) for kw in ALL_KEYWORDS if _matches(kw, haystack)]
+    return [_label(kw) for kw in (keywords or ALL_KEYWORDS) if _matches(kw, haystack)]
 
 
 def match_branch(*texts: str) -> list:
