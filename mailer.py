@@ -22,7 +22,7 @@ def send_digest(html: str, has_content: bool, subject_prefix: str = "VAD Monitor
         print("[mailer] skipped: SMTP_HOST/SMTP_USER/SMTP_PASS/DIGEST_TO not fully set")
         return
 
-    subject = f"{subject_prefix} — {date.today().isoformat()}" + ("" if has_content else " (cisza w tym tygodniu)")
+    subject = f"{subject_prefix} — {date.today().isoformat()}" + ("" if has_content else " (quiet week)")
     msg = MIMEText(html, "html", "utf-8")
     msg["Subject"] = subject
     msg["From"] = user

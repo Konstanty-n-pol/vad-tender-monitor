@@ -52,7 +52,7 @@ def fetch() -> list:
             date_found=today,
             buyer=buyer,
             keywords_matched=matched,
-            reason=f"słowo kluczowe: {matched[0]}; zamawiający: {buyer or 'n/a'} ({canton})",
+            reason=f"keyword: {matched[0]}; buyer: {buyer or 'n/a'} ({canton})",
         ))
     return records
 

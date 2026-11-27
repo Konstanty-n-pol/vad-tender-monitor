@@ -70,7 +70,7 @@ def fetch(lookback_days: int = PROZORRO_LOOKBACK_DAYS, max_pages: int = PROZORRO
         # The search engine also matches item descriptions/documents, so a hit whose title doesn't
         # mention Starlink (e.g. "Кабель" or a bare CPV code) is still kept — labelled as a
         # search-only hit so it's easy to tell apart in the digest.
-        kw_label = matched[0] if matched else f"Prozorro: „{sorted(found_by)[0]}” (poza tytułem)"
+        kw_label = matched[0] if matched else f"Prozorro search: \"{sorted(found_by)[0]}\" (not in title)"
         records.append(Record(
             title=title,
             url=TENDER_URL.format(tid),
@@ -82,8 +82,8 @@ def fetch(lookback_days: int = PROZORRO_LOOKBACK_DAYS, max_pages: int = PROZORRO
             deadline=((notice.get("tenderPeriod") or {}).get("endDate") or "")[:10] or None,
             value_estimate=_format_value(notice.get("value")),
             keywords_matched=matched or ["starlink (search)"],
-            activity_category="Starlink / łączność satelitarna",
-            reason=f"{_accessory_prefix(title)}{kw_label}; {tid}; status: {notice.get('status', 'n/a')}; zamawiający: {buyer or 'n/a'}",
+            activity_category="Starlink / satellite comms",
+            reason=f"{_accessory_prefix(title)}{kw_label}; {tid}; status: {notice.get('status', 'n/a')}; buyer: {buyer or 'n/a'}",
         ))
     records.sort(key=lambda r: r.url, reverse=True)  # tenderIDs sort chronologically
     return records
@@ -132,7 +132,7 @@ def _post(url: str, body: dict, retries: int = 4):
 
 def _accessory_prefix(title: str) -> str:
     t = title.lower()
-    return "🔌 akcesoria; " if any(term in t for term in STARLINK_ACCESSORY_TERMS) else ""
+    return "🔌 accessories; " if any(term in t for term in STARLINK_ACCESSORY_TERMS) else ""
 
 
 def _tender_date(tender_id: str):

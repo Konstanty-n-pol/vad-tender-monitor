@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VAD Monitor Dashboard</title>
@@ -27,37 +27,37 @@
 </head>
 <body>
 <header><div class="wrap">
-<h1>VAD Monitor — GIS/MV-HV części zamienne (DACH/CEE)</h1>
-<p>Ostatnia aktualizacja: {{ run_date }} · {{ records|length }} pozycji w archiwum · <a href="distributors.html" style="color:#c0c0d0;">Dystrybutorzy/Broker/Reseller (CH) →</a></p>
+<h1>VAD Monitor — GIS/MV-HV spare parts &amp; Starlink accessories (DACH/CEE/UA)</h1>
+<p>Last updated: {{ run_date }} · {{ records|length }} items in archive · <a href="distributors.html" style="color:#c0c0d0;">Distributors/Brokers/Resellers (CH) →</a></p>
 </div></header>
 
 <div class="wrap">
 <div class="controls">
-  <input id="q" type="text" placeholder="Szukaj słowa kluczowego...">
-  <select id="country"><option value="">Wszystkie kraje</option>{% for c in countries %}<option value="{{ c }}">{{ country_labels.get(c, c) }}</option>{% endfor %}</select>
-  <select id="category"><option value="">Wszystkie kategorie</option><option value="tender">🔴 Przetargi</option><option value="company">🟡 Firmy</option><option value="news">⚪ Newsy</option></select>
-  <select id="source"><option value="">Wszystkie źródła</option>{% for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
-  <select id="tier"><option value="">Wszystkie tiery</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
-  <select id="activityCategory"><option value="">Wszystkie kategorie działalności</option>{% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
-  <label style="font-size:13px;"><input type="checkbox" id="hideExpired"> ukryj przeterminowane</label>
-  <label style="font-size:13px;"><input type="checkbox" id="onlyStarred"> tylko oznaczone ★</label>
+  <input id="q" type="text" placeholder="Search keyword...">
+  <select id="country"><option value="">All countries</option>{% for c in countries %}<option value="{{ c }}">{{ country_name(c) }}</option>{% endfor %}</select>
+  <select id="category"><option value="">All types</option><option value="tender">🔴 Tenders</option><option value="company">🟡 Companies</option><option value="news">⚪ News</option></select>
+  <select id="source"><option value="">All sources</option>{% for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
+  <select id="tier"><option value="">All tiers</option><option value="Tier 1">Tier 1</option><option value="Tier 2">Tier 2</option><option value="Tier 1 + Tier 2">Tier 1 + Tier 2</option></select>
+  <select id="activityCategory"><option value="">All activity categories</option>{% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
+  <label style="font-size:13px;"><input type="checkbox" id="hideExpired"> hide expired</label>
+  <label style="font-size:13px;"><input type="checkbox" id="onlyStarred"> starred only ★</label>
 </div>
 
 <table id="tbl">
 <thead><tr>
 <th>★</th>
-<th data-k="category">Kat.</th>
-<th data-k="country">Kraj</th>
-<th data-k="title">Tytuł</th>
+<th data-k="category">Type</th>
+<th data-k="country">Country</th>
+<th data-k="title">Title</th>
 <th>WWW</th>
-<th data-k="buyer">Zamawiający</th>
+<th data-k="buyer">Buyer</th>
 <th data-k="tier">Tier</th>
-<th data-k="activityCategory">Kategoria działalności</th>
-<th data-k="source">Źródło</th>
-<th data-k="date_first_seen">Wykryto</th>
-<th data-k="days_since">Dni od wykrycia</th>
-<th data-k="deadline">Termin</th>
-<th>Uzasadnienie</th>
+<th data-k="activityCategory">Activity category</th>
+<th data-k="source">Source</th>
+<th data-k="date_first_seen">First seen</th>
+<th data-k="days_since">Days since</th>
+<th data-k="deadline">Deadline</th>
+<th>Why it matched</th>
 </tr></thead>
 <tbody>
 {% for r in records %}
@@ -65,11 +65,11 @@
     data-country="{{ r.country }}" data-category="{{ r.category }}" data-source="{{ r.source }}"
     data-tier="{{ r.commodity_tier or '' }}" data-activity-category="{{ r.activity_category or '' }}"
     data-star-id="{{ r.dedup_key }}"
-    data-expired="{{ r.expired }}" data-text="{{ (r.title ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
+    data-expired="{{ r.expired }}" data-text="{{ (r.title ~ ' ' ~ (r.title_en or '') ~ ' ' ~ (r.reason or '') ~ ' ' ~ (r.buyer or '') ~ ' ' ~ (r.keywords_matched or ''))|lower }}">
   <td class="star-cell"><input type="checkbox" class="star-check"></td>
   <td>{{ {"tender": "🔴", "company": "🟡", "news": "⚪"}.get(r.category, "") }}</td>
-  <td>{{ country_labels.get(r.country, r.country) }}</td>
-  <td><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></td>
+  <td>{{ country_name(r.country) }}</td>
+  <td><a href="{{ r.url }}" target="_blank">{{ r.display_title }}</a>{% if r.display_title != r.title %}<div style="font-size:11px;color:#999;margin-top:2px;">{{ r.title }}</div>{% endif %}</td>
   <td>{% if r.website %}<a href="{{ r.website }}" target="_blank">🔗</a>{% endif %}</td>
   <td>{{ r.buyer or "" }}</td>
   <td>{{ r.commodity_tier or "" }}</td>

@@ -28,6 +28,7 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           DIGEST_TO: ${{ secrets.DIGEST_TO }}
           DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}  # tender title translation (translate.py); optional
         run: python main.py
 
       - name: Commit updated data + dashboard

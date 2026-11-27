@@ -81,6 +81,9 @@ _MIGRATIONS = [
     ("distributor_records", "llm_business_model", "TEXT"),
     ("distributor_records", "llm_relevance", "TEXT"),
     ("distributor_records", "llm_relevance_reason", "TEXT"),
+    # English translation of tender titles (translate.py, Claude) — filled after each weekly
+    # upsert; NULL = not translated yet. Company titles are names and are never translated.
+    ("records", "title_en", "TEXT"),
 ]
 
 
@@ -138,6 +141,33 @@ def upsert_records(records) -> list:
             (today,),
         )
     return new_records
+
+
+def untranslated_tenders(limit: int = 500) -> list:
+    """(dedup_key, title) of tenders without an English title yet, newest first."""
+    with connect() as conn:
+        return conn.execute(
+            "SELECT dedup_key, title FROM records WHERE category = 'tender' AND title_en IS NULL "
+            "ORDER BY date_first_seen DESC LIMIT ?", (limit,),
+        ).fetchall()
+
+
+def set_titles_en(translations: dict) -> None:
+    """{dedup_key: english_title}"""
+    with connect() as conn:
+        conn.executemany("UPDATE records SET title_en = ? WHERE dedup_key = ?",
+                         [(en, key) for key, en in translations.items()])
+
+
+def titles_en(keys: list) -> dict:
+    if not keys:
+        return {}
+    with connect() as conn:
+        rows = conn.execute(
+            f"SELECT dedup_key, title_en FROM records WHERE title_en IS NOT NULL AND dedup_key IN "
+            f"({','.join('?' * len(keys))})", keys,
+        ).fetchall()
+    return dict(rows)
 
 
 def all_records():

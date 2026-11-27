@@ -14,7 +14,7 @@ from config import STARLINK_ACCESSORY_TERMS
 
 BASE_URL = "https://api.ted.europa.eu/v3/notices/search"
 TARGET_COUNTRIES = ["DEU", "POL"]  # switchgear group only; CH is out of scope here
-STARLINK_CATEGORY = "Starlink / łączność satelitarna"
+STARLINK_CATEGORY = "Starlink / satellite comms"
 
 # TED returns ISO 3166-1 alpha-3; a plain [:2] slice is wrong for e.g. PRT, AUT, SWE, SVK, SVN.
 ISO3_TO_ISO2 = {
@@ -99,8 +99,8 @@ def _fetch_group(terms, countries, keywords, activity_category: str = "", limit:
             buyer=buyer,
             keywords_matched=matched,
             activity_category=activity_category,
-            reason=(("🔌 akcesoria; " if activity_category and any(t in title.lower() for t in STARLINK_ACCESSORY_TERMS) else "")
-                    + f"słowo kluczowe: {matched[0]}; zamawiający: {buyer or 'n/a'}"),
+            reason=(("🔌 accessories; " if activity_category and any(t in title.lower() for t in STARLINK_ACCESSORY_TERMS) else "")
+                    + f"keyword: {matched[0]}; buyer: {buyer or 'n/a'}"),
         ))
     return records
 

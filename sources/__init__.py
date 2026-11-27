@@ -23,5 +23,7 @@ class Record:
                                      # this is only ever populated by a one-off manual enrichment
                                      # pass, never by the automated weekly fetch. See storage.py.
 
+    title_en: Optional[str] = None  # filled from storage after translate.py runs (email only)
+
     def dedup_key(self) -> str:
         return self.url or f"{self.source}:{self.title}"

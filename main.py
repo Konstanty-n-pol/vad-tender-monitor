@@ -7,6 +7,7 @@ import os
 from config import SOURCES_ENABLED, DISTRIBUTOR_REPORT_ENABLED
 from sources import zefix, simap, ted, ezamowienia, zefix_distributors, prozorro
 import storage
+import translate
 import generate
 import mailer
 
@@ -79,6 +80,11 @@ def main():
 
     new_records = storage.upsert_records(all_records)
     print(f"[main] {len(new_records)} brand-new record(s) this run")
+
+    translate.translate_pending()
+    en = storage.titles_en([r.dedup_key() for r in new_records])
+    for r in new_records:
+        r.title_en = en.get(r.dedup_key())
 
     generate.write_dashboard()
 
